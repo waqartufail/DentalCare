@@ -58,12 +58,3 @@ export function Locked({ clinic, state, onRefresh, onLogout }) {
     </Screen>
   )
 }
-
-export function StaffPlaceholder({ profile, clinic, onLogout }) {
-  const names = { doctor: 'Doctor', receptionist: 'Receptionist', lab_technician: 'Lab Technician' }
-  return (
-    <Screen icon="🛠️" title={`${names[profile.role] || 'Staff'} panel jald aa raha hai`} onLogout={onLogout}>
-      <p>Welcome, {profile.full_name}. <b>{clinic.name}</b> me aap ka account active hai. Is role ki screens agle phase me banengi.</p>
-    </Screen>
-  )
-}

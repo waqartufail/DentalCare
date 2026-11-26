@@ -85,3 +85,16 @@ details summary{cursor:pointer;font-weight:600}
 .chips button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:.35rem .8rem;font-size:.82rem;cursor:pointer}
 .chips button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 .card.narrow .row{padding:.25rem 0}
+textarea{width:100%;padding:.65rem .75rem;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit;font-size:16px;margin-top:.25rem;resize:vertical}
+.sheet.wide{max-width:640px}
+.hist{border-top:1px solid var(--line);padding:.6rem 0;font-size:.92rem}
+.picklist{max-height:210px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin:.6rem 0;padding:.3rem .6rem}
+.check.pick{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin:0;padding:.45rem 0;border-bottom:1px solid #f1f5f9;color:var(--text);font-size:.95rem}
+.check.pick span:nth-child(2){flex:1}
+.msg{background:#f0fdf4;border-radius:10px;padding:.6rem .8rem;margin-top:.5rem;font-size:.92rem}
+.testbar{position:sticky;top:0;z-index:40;background:#fef3c7;color:#92400e;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;padding:.4rem .8rem;font-size:.8rem;font-weight:700}
+.testbar select{width:auto;padding:.25rem .5rem;font-size:14px;max-width:60%}
+.testerr{color:var(--red);font-weight:500}
+.testbox{margin-top:1rem;padding-top:.8rem;border-top:1px dashed var(--line)}
+.tabbar button{min-width:0;font-size:.62rem}
+@media(min-width:860px){.tabbar button{font-size:.7rem}}

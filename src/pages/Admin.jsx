@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabase'
 import { effStatus, fmtDate, money, daysLeft, billingLabel } from '../util'
+import Attendance from '../components/Attendance'
+import { Overview, Payroll, StaffAttendance, Settings } from './AdminExtra'
 
 const TABS = [
   ['dashboard', '📊', 'Dashboard'],
   ['treatments', '🦷', 'Treatments'],
   ['staff', '👥', 'Staff'],
-  ['expenses', '💸', 'Expenses'],
-  ['reports', '📈', 'Reports'],
+  ['finance', '💰', 'Finance'],
+  ['settings', '⚙️', 'Settings'],
 ]
-const ROLES = { admin: 'Admin', doctor: 'Doctor', receptionist: 'Receptionist', lab_technician: 'Lab Technician' }
+const ROLES = { admin: 'Admin', doctor: 'Doctor', receptionist: 'Receptionist', lab_technician: 'Lab Technician', helper: 'Helper' }
 const CATEGORIES = ['Rent', 'Salaries', 'Utilities', 'Lab', 'Materials', 'Equipment', 'Maintenance', 'Marketing', 'Other']
 
 const iso = (d) => {
@@ -52,7 +54,8 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
     const { error } = await fn()
     if (error) {
       const m = error.message || ''
-      notify(m.includes('duplicate key') && m.includes('email') ? 'Ye email pehle se kisi employee ke liye registered hai' : m, true)
+      notify(m.includes('duplicate key') && m.includes('email') ? 'Ye email pehle se kisi employee ke liye registered hai'
+        : m.includes('foreign key') ? 'Is record ka data (appointments/history) maujood hai, delete ke bajaye Deactivate karein' : m, true)
       return false
     }
     if (okMsg) notify(okMsg)
@@ -84,11 +87,11 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
         </header>
         {loading ? <div className="spinner" /> : (
           <>
-            {tab === 'dashboard' && <Dashboard {...ctx} go={setTab} onClinicChanged={onClinicChanged} />}
+            {tab === 'dashboard' && <Dashboard {...ctx} go={setTab} onClinicChanged={onClinicChanged} userId={profile.id} />}
             {tab === 'treatments' && <Treatments {...ctx} />}
             {tab === 'staff' && <Staff {...ctx} />}
-            {tab === 'expenses' && <Expenses {...ctx} userId={profile.id} />}
-            {tab === 'reports' && <Reports {...ctx} />}
+            {tab === 'finance' && <Finance {...ctx} userId={profile.id} />}
+            {tab === 'settings' && <Settings clinic={clinic} notify={notify} onSaved={onClinicChanged} />}
           </>
         )}
       </main>
@@ -106,7 +109,7 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
 }
 
 /* ------------------------------ Dashboard ------------------------------ */
-function Dashboard({ clinic, plans, treatments, employees, expenses, go, act, onClinicChanged }) {
+function Dashboard({ clinic, plans, treatments, employees, expenses, go, act, onClinicChanged, userId }) {
   const [edit, setEdit] = useState(false)
   const state = effStatus(clinic)
   const plan = plans.find((p) => p.id === clinic.plan_id)
@@ -135,15 +138,18 @@ function Dashboard({ clinic, plans, treatments, employees, expenses, go, act, on
       <div className="grid stats">
         <button className="stat teal" onClick={() => go('treatments')}><div className="v">{treatments.filter((t) => t.is_active).length}</div><div className="l">Active treatments</div></button>
         <button className="stat blue" onClick={() => go('staff')}><div className="v">{employees.filter((e) => e.is_active).length}</div><div className="l">Active staff</div></button>
-        <button className="stat amber" onClick={() => go('expenses')}><div className="v" style={{ fontSize: '1.3rem' }}>{money(monthExp)}</div><div className="l">Expenses this month</div></button>
+        <button className="stat amber" onClick={() => go('finance')}><div className="v" style={{ fontSize: '1.3rem' }}>{money(monthExp)}</div><div className="l">Expenses this month</div></button>
       </div>
 
       <div className="card">
         <h3>Shuruat kaise karein</h3>
-        <div className="row"><span>1. Treatments aur unki fee add karein</span><button className="btn small" onClick={() => go('treatments')}>Open</button></div>
-        <div className="row"><span>2. Doctor / Receptionist / Lab Technician register karein</span><button className="btn small" onClick={() => go('staff')}>Open</button></div>
-        <div className="row"><span>3. Rozana ke expenses record karein</span><button className="btn small" onClick={() => go('expenses')}>Open</button></div>
+        <div className="row"><span>1. Settings: timing, slot, follow-up, attendance location</span><button className="btn small" onClick={() => go('settings')}>Open</button></div>
+        <div className="row"><span>2. Treatments aur unki fee add karein</span><button className="btn small" onClick={() => go('treatments')}>Open</button></div>
+        <div className="row"><span>3. Doctor / Receptionist / Lab / Helper register karein</span><button className="btn small" onClick={() => go('staff')}>Open</button></div>
+        <div className="row"><span>4. Expenses aur payroll</span><button className="btn small" onClick={() => go('finance')}>Open</button></div>
       </div>
+      <h3>Meri attendance</h3>
+      <Attendance userId={userId} />
 
       {edit && <ClinicEdit clinic={clinic} act={act} close={() => setEdit(false)} onSaved={onClinicChanged} />}
     </>
@@ -183,7 +189,7 @@ function Treatments({ clinic, treatments, act, notify }) {
 
   async function save(e) {
     e.preventDefault()
-    const row = { name: form.name.trim(), fee: Number(form.fee), is_active: form.is_active }
+    const row = { name: form.name.trim(), fee: Number(form.fee), is_active: form.is_active, needs_lab: !!form.needs_lab }
     if (!row.name || isNaN(row.fee) || row.fee < 0) return notify('Name aur fee sahi likhein', true)
     const ok = await act(() => form.id ? supabase.from('treatments').update(row).eq('id', form.id) : supabase.from('treatments').insert({ ...row, clinic_id: clinic.id }), 'Treatment saved')
     if (ok) setForm(null)
@@ -193,13 +199,13 @@ function Treatments({ clinic, treatments, act, notify }) {
     <>
       <div className="card inline">
         <input placeholder="Search treatment" value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="btn primary" style={{ whiteSpace: 'nowrap' }} onClick={() => setForm({ id: null, name: '', fee: '', is_active: true })}>+ Add</button>
+        <button className="btn primary" style={{ whiteSpace: 'nowrap' }} onClick={() => setForm({ id: null, name: '', fee: '', is_active: true, needs_lab: false })}>+ Add</button>
       </div>
       {rows.length === 0 && <div className="card muted">Abhi koi treatment nahi. “+ Add” se shuru karein (jaise Scaling, Filling, Root Canal).</div>}
       {rows.map((t) => (
         <div className="card" key={t.id}>
           <div className="row">
-            <div><b>{t.name}</b> {!t.is_active && <span className="pill gray">inactive</span>}</div>
+            <div><b>{t.name}</b> {t.needs_lab && <span className="pill blue">Lab</span>} {!t.is_active && <span className="pill gray">inactive</span>}</div>
             <div className="big small-big">{money(t.fee)}</div>
           </div>
           <div className="actions">
@@ -216,6 +222,7 @@ function Treatments({ clinic, treatments, act, notify }) {
             <label>Treatment name<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required autoFocus /></label>
             <label>Fee<input type="number" min="0" value={form.fee} onChange={(e) => setForm({ ...form, fee: e.target.value })} required inputMode="decimal" /></label>
             <label className="check"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> Active</label>
+            <label className="check"><input type="checkbox" checked={!!form.needs_lab} onChange={(e) => setForm({ ...form, needs_lab: e.target.checked })} /> Is treatment me Lab ka kaam hai (braces, dentures, crown...)</label>
             <div className="actions"><button className="btn primary">Save</button><button type="button" className="btn" onClick={() => setForm(null)}>Cancel</button></div>
           </form>
         </div>
@@ -227,13 +234,13 @@ function Treatments({ clinic, treatments, act, notify }) {
 /* ------------------------------ Staff ------------------------------ */
 function Staff({ clinic, employees, act, notify }) {
   const [form, setForm] = useState(null)
-  const empty = { id: null, full_name: '', email: '', phone: '', role: 'receptionist', joining_date: today(), salary: '' }
+  const empty = { id: null, full_name: '', email: '', phone: '', role: 'receptionist', joining_date: today(), salary: '', overtime_enabled: false }
 
   async function save(e) {
     e.preventDefault()
     const row = {
       full_name: form.full_name.trim(), email: form.email.trim().toLowerCase(), phone: form.phone || null,
-      role: form.role, joining_date: form.joining_date || null, salary: form.salary === '' ? null : Number(form.salary),
+      role: form.role, joining_date: form.joining_date || null, salary: form.salary === '' ? null : Number(form.salary), overtime_enabled: !!form.overtime_enabled,
     }
     if (!row.full_name || !row.email) return notify('Name aur email zaroori hain', true)
     const ok = await act(() => form.id ? supabase.from('employees').update(row).eq('id', form.id) : supabase.from('employees').insert({ ...row, clinic_id: clinic.id }), 'Employee saved')
@@ -257,7 +264,7 @@ function Staff({ clinic, employees, act, notify }) {
               <div className="muted">{m.user_id ? '✅ Account linked' : '⏳ Sign up ka intezar'}{m.joining_date ? ` · joined ${fmtDate(m.joining_date)}` : ''}</div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <span className="pill blue">{ROLES[m.role]}</span>
+              <span className="pill blue">{ROLES[m.role]}</span>{m.overtime_enabled && <span className="pill amber" style={{ marginLeft: 4 }}>OT</span>}
               {m.salary != null && <div className="muted">{money(m.salary)}/mo</div>}
             </div>
           </div>
@@ -286,6 +293,7 @@ function Staff({ clinic, employees, act, notify }) {
               <label>Joining date<input type="date" value={form.joining_date} onChange={(e) => setForm({ ...form, joining_date: e.target.value })} /></label>
             </div>
             <label>Monthly salary (optional)<input type="number" min="0" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} inputMode="decimal" /></label>
+            <label className="check"><input type="checkbox" checked={!!form.overtime_enabled} onChange={(e) => setForm({ ...form, overtime_enabled: e.target.checked })} /> Overtime calculate karein (roz ke kaam ke ghanton ke baad)</label>
             <div className="actions"><button className="btn primary">Save</button><button type="button" className="btn" onClick={() => setForm(null)}>Cancel</button></div>
           </form>
         </div>
@@ -453,6 +461,23 @@ function Reports({ expenses, employees, treatments }) {
       </div>
 
       <div className="card muted">Income, patients aur treatment wise revenue reports tab ban sakengi jab Receptionist ka billing wala phase ban jayega.</div>
+    </>
+  )
+}
+
+
+/* ------------------------------ Finance (sub tabs) ------------------------------ */
+function Finance(props) {
+  const [sub, setSub] = useState('overview')
+  const subs = [['overview', 'Income / Outgoing'], ['expenses', 'Expenses'], ['payroll', 'Payroll'], ['attendance', 'Staff attendance'], ['reports', 'Reports']]
+  return (
+    <>
+      <div className="chips">{subs.map(([k, l]) => <button key={k} className={sub === k ? 'on' : ''} onClick={() => setSub(k)}>{l}</button>)}</div>
+      {sub === 'overview' && <Overview {...props} />}
+      {sub === 'expenses' && <Expenses {...props} />}
+      {sub === 'payroll' && <Payroll {...props} />}
+      {sub === 'attendance' && <StaffAttendance {...props} />}
+      {sub === 'reports' && <Reports {...props} />}
     </>
   )
 }
