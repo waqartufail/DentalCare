@@ -5,7 +5,9 @@ export function effStatus(c) {
   return c.status
 }
 
-export const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—')
+import { t, getLocale } from './i18n'
+
+export const fmtDate = (d) => (d ? new Date(d).toLocaleDateString(getLocale(), { day: '2-digit', month: 'short', year: 'numeric' }) : '—')
 
 export const money = (n, cur = 'PKR') => `${cur} ${Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
 
@@ -14,4 +16,4 @@ export function daysLeft(d) {
   return Math.ceil((new Date(d) - new Date()) / 86400000)
 }
 
-export const billingLabel = { monthly: 'Monthly', yearly: 'Yearly', lifetime: 'Lifetime' }
+export const billingLabel = { get monthly() { return t('bill.monthly') }, get yearly() { return t('bill.yearly') }, get lifetime() { return t('bill.lifetime') } }

@@ -4,6 +4,7 @@ import Shell from '../components/Shell'
 import Attendance from '../components/Attendance'
 import { useToast, isoDate, addDays, dayStart, fmtTime, fmtDT, waLink, STATUS, KIND, ACTIVE, apptTotal, apptPaid } from '../lib'
 import { fmtDate, money } from '../util'
+import { t as T } from '../i18n'
 
 export default function Receptionist({ profile, clinic, onLogout }) {
   const [tab, setTab] = useState('today')
@@ -58,8 +59,8 @@ export default function Receptionist({ profile, clinic, onLogout }) {
   const current = modal?.appt ? appts.find((x) => x.id === modal.appt) : null
 
   return (
-    <Shell brand={clinic.name} role="Receptionist" userName={profile.full_name} onLogout={onLogout} toast={toast}
-      tabs={[['today', '📅', 'Today'], ['patients', '🧑', 'Patients'], ['payments', '💵', 'Payments'], ['followups', '🔁', 'Follow-ups'], ['messages', '💬', 'Messages'], ['attendance', '🕒', 'Attendance']]}
+    <Shell clinic={clinic} role="role.receptionist" userName={profile.full_name} onLogout={onLogout} toast={toast}
+      tabs={[['today', '📅', 'tab.today'], ['patients', '🧑', 'tab.patients'], ['payments', '💵', 'tab.payments'], ['followups', '🔁', 'tab.followups'], ['messages', '💬', 'tab.messages'], ['attendance', '🕒', 'tab.attendance']]}
       tab={tab} setTab={setTab} badges={{ followups: pendingFollowups.length, messages: messages.length }}>
       {tab === 'attendance' ? <Attendance userId={profile.id} /> : loading ? <div className="spinner" /> : (
         <>
@@ -102,7 +103,7 @@ function Today({ appts, doctors, docName, date, setDate, docFilter, setDocFilter
           {doctors.map((d) => <option key={d.id} value={d.id}>Dr. {d.full_name}</option>)}
         </select>
       </div>
-      <button className="btn primary" onClick={() => setModal({ type: 'book' })}>+ New appointment</button>
+      <button className="btn primary" onClick={() => setModal({ type: 'book' })}>{T('b.new_appt')}</button>
       <div style={{ height: '.8rem' }} />
       {day.length === 0 && <div className="card muted">Is din koi appointment nahi.</div>}
       {day.map((a) => {
@@ -126,10 +127,10 @@ function Today({ appts, doctors, docName, date, setDate, docFilter, setDocFilter
             </div>
             {!['cancelled', 'no_show'].includes(a.status) && (
               <div className="actions">
-                {a.status === 'scheduled' && <button className="btn small primary" onClick={() => act(() => supabase.from('appointments').update({ status: 'arrived', arrived_at: new Date().toISOString() }).eq('id', a.id), 'Patient arrived mark hua')}>Arrived</button>}
-                <button className="btn small" onClick={() => setModal({ type: 'lines', appt: a.id })}>Treatments</button>
-                <button className="btn small" onClick={() => setModal({ type: 'pay', appt: a.id })}>Payment</button>
-                {a.status === 'scheduled' && <button className="btn small danger" onClick={() => { if (confirm('Appointment cancel karein? Slot khali ho jayega.')) act(() => supabase.from('appointments').update({ status: 'cancelled' }).eq('id', a.id), 'Cancelled') }}>Cancel</button>}
+                {a.status === 'scheduled' && <button className="btn small primary" onClick={() => act(() => supabase.from('appointments').update({ status: 'arrived', arrived_at: new Date().toISOString() }).eq('id', a.id), 'Patient arrived mark hua')}>{T('b.arrived')}</button>}
+                <button className="btn small" onClick={() => setModal({ type: 'lines', appt: a.id })}>{T('b.treatments')}</button>
+                <button className="btn small" onClick={() => setModal({ type: 'pay', appt: a.id })}>{T('b.payment')}</button>
+                {a.status === 'scheduled' && <button className="btn small danger" onClick={() => { if (confirm('Appointment cancel karein? Slot khali ho jayega.')) act(() => supabase.from('appointments').update({ status: 'cancelled' }).eq('id', a.id), 'Cancelled') }}>{T('c.cancel')}</button>}
               </div>
             )}
           </div>
@@ -147,7 +148,7 @@ function Patients({ patients, setModal }) {
     <>
       <div className="card inline">
         <input placeholder="Naam / phone / ID" value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="btn primary" style={{ whiteSpace: 'nowrap' }} onClick={() => setModal({ type: 'register' })}>+ Register</button>
+        <button className="btn primary" style={{ whiteSpace: 'nowrap' }} onClick={() => setModal({ type: 'register' })}>{T('b.register_patient')}</button>
       </div>
       {rows.length === 0 && <div className="card muted">Koi patient nahi mila.</div>}
       {rows.map((p) => (
@@ -183,11 +184,11 @@ function PatientForm({ clinic, patients, initial, onSaved, onCancel, notify }) {
       <label>Phone (WhatsApp)<input value={f.phone} onChange={set('phone')} inputMode="tel" placeholder="03xx xxxxxxx" /></label>
       {dup && <div className="alert">Is number par pehle se patient hai: {dup.full_name} (ID #{dup.patient_no})</div>}
       <div className="two-col">
-        <label>Gender<select value={f.gender || ''} onChange={set('gender')}><option value="">—</option><option>Male</option><option>Female</option><option>Other</option></select></label>
-        <label>Age<input type="number" min="0" max="120" value={f.age ?? ''} onChange={set('age')} inputMode="numeric" /></label>
+        <label>{T('f.gender')}<select value={f.gender || ''} onChange={set('gender')}><option value="">—</option><option>Male</option><option>Female</option><option>Other</option></select></label>
+        <label>{T('f.age')}<input type="number" min="0" max="120" value={f.age ?? ''} onChange={set('age')} inputMode="numeric" /></label>
       </div>
-      <label>Address<input value={f.address || ''} onChange={set('address')} /></label>
-      <div className="actions"><button className="btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save patient'}</button><button type="button" className="btn" onClick={onCancel}>Cancel</button></div>
+      <label>{T('f.address')}<input value={f.address || ''} onChange={set('address')} /></label>
+      <div className="actions"><button className="btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save patient'}</button><button type="button" className="btn" onClick={onCancel}>{T('c.cancel')}</button></div>
     </form>
   )
 }
@@ -213,12 +214,12 @@ function PatientModal({ patient, close, setModal, docName }) {
   return (
     <div className="modal" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="row"><h3 style={{ margin: 0 }}>{patient.full_name} <span className="pill gray">ID #{patient.patient_no}</span></h3><button className="btn small" onClick={close}>Close</button></div>
+        <div className="row"><h3 style={{ margin: 0 }}>{patient.full_name} <span className="pill gray">ID #{patient.patient_no}</span></h3><button className="btn small" onClick={close}>{T('c.close')}</button></div>
         <div className="muted">{patient.phone || '—'}{patient.age ? ` · ${patient.age} yrs` : ''}{patient.gender ? ` · ${patient.gender}` : ''}</div>
         {patient.address && <div className="muted">{patient.address}</div>}
         <div className="actions">
-          <button className="btn primary" onClick={() => setModal({ type: 'book', patient })}>Book appointment</button>
-          <button className="btn" onClick={() => setModal({ type: 'register', initial: patient })}>Edit</button>
+          <button className="btn primary" onClick={() => setModal({ type: 'book', patient })}>{T('b.book')}</button>
+          <button className="btn" onClick={() => setModal({ type: 'register', initial: patient })}>{T('c.edit')}</button>
         </div>
         <h4>Visits</h4>
         {rows === null ? <div className="spinner" /> : rows.length === 0 ? <p className="muted">Abhi koi visit nahi.</p> : rows.map((h) => (
@@ -304,7 +305,7 @@ function BookModal({ clinic, patients, doctors, treatments, prePatient, act, not
   return (
     <div className="modal" onClick={close}>
       <div className="sheet wide" onClick={(e) => e.stopPropagation()}>
-        <div className="row"><h3 style={{ margin: 0 }}>Nayi appointment</h3><button className="btn small" onClick={close}>Close</button></div>
+        <div className="row"><h3 style={{ margin: 0 }}>Nayi appointment</h3><button className="btn small" onClick={close}>{T('c.close')}</button></div>
 
         <h4>1. Patient</h4>
         {patient ? (
@@ -352,7 +353,7 @@ function LinesModal({ appt: a, treatments, clinic, act, close }) {
   return (
     <div className="modal" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="row"><h3 style={{ margin: 0 }}>{a.patients?.full_name}: treatments</h3><button className="btn small" onClick={close}>Close</button></div>
+        <div className="row"><h3 style={{ margin: 0 }}>{a.patients?.full_name}: treatments</h3><button className="btn small" onClick={close}>{T('c.close')}</button></div>
         {lines.length === 0 && <p className="muted">Abhi koi treatment nahi.</p>}
         {lines.map((t) => (
           <div className="row" key={t.id} style={{ padding: '.2rem 0' }}><span>{t.name}</span><span><b>{money(t.fee)}</b> <button className="btn small danger" onClick={() => act(() => supabase.from('appointment_treatments').delete().eq('id', t.id))}>✕</button></span></div>
@@ -380,7 +381,7 @@ function PayModal({ appt: a, act, close }) {
   return (
     <div className="modal" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="row"><h3 style={{ margin: 0 }}>{a.patients?.full_name}: payment</h3><button className="btn small" onClick={close}>Close</button></div>
+        <div className="row"><h3 style={{ margin: 0 }}>{a.patients?.full_name}: payment</h3><button className="btn small" onClick={close}>{T('c.close')}</button></div>
         {(a.appointment_treatments || []).map((t) => <div className="row" key={t.id} style={{ padding: '.15rem 0' }}><span>{t.name}</span><span>{money(t.fee)}</span></div>)}
         {(a.appointment_treatments || []).length === 0 && <p className="muted">Koi treatment/charge nahi. Pehle "Treatments" se add karein.</p>}
         <div className="row"><b>Total</b><b>{money(total)}</b></div>
@@ -390,10 +391,10 @@ function PayModal({ appt: a, act, close }) {
         {bal > 0 && (
           <>
             <div className="two-col">
-              <label>Amount<input type="number" min="1" max={bal} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" /></label>
-              <label>Method<select value={method} onChange={(e) => setMethod(e.target.value)}>{['Cash', 'Card', 'JazzCash', 'Easypaisa', 'Bank transfer'].map((m) => <option key={m}>{m}</option>)}</select></label>
+              <label>{T('f.amount')}<input type="number" min="1" max={bal} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" /></label>
+              <label>{T('f.method')}<select value={method} onChange={(e) => setMethod(e.target.value)}>{['Cash', 'Card', 'JazzCash', 'Easypaisa', 'Bank transfer'].map((m) => <option key={m}>{m}</option>)}</select></label>
             </div>
-            <label>Note<input value={note} onChange={(e) => setNote(e.target.value)} placeholder="optional" /></label>
+            <label>{T('f.note')}<input value={note} onChange={(e) => setNote(e.target.value)} placeholder="optional" /></label>
             <div className="actions"><button className="btn primary" disabled={!amount || Number(amount) <= 0 || Number(amount) > bal} onClick={receive}>Receive {amount ? money(amount) : ''}</button></div>
           </>
         )}
@@ -457,7 +458,7 @@ function FollowupModal({ appt: a, clinic, docName, act, close }) {
   return (
     <div className="modal" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="row"><h3 style={{ margin: 0 }}>Follow-up: {a.patients?.full_name}</h3><button className="btn small" onClick={close}>Close</button></div>
+        <div className="row"><h3 style={{ margin: 0 }}>Follow-up: {a.patients?.full_name}</h3><button className="btn small" onClick={close}>{T('c.close')}</button></div>
         <div className="muted">Dr. {docName[a.doctor_id] || '—'} · {clinic.followup_minutes} min · fee {money(clinic.followup_fee)}</div>
         {a.followup_note && <div>“{a.followup_note}”</div>}
         <SlotPicker doctorId={a.doctor_id} minutes={clinic.followup_minutes} value={start} onChange={setStart} />

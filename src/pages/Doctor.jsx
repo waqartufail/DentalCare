@@ -4,9 +4,23 @@ import Shell from '../components/Shell'
 import Attendance from '../components/Attendance'
 import { useToast, isoDate, addDays, dayStart, fmtTime, fmtDT, STATUS, KIND, ACTIVE, apptTotal } from '../lib'
 import { fmtDate, money } from '../util'
+import { t as T } from '../i18n'
 
 export default function Doctor({ profile, clinic, onLogout }) {
   const [tab, setTab] = useState('queue')
+  const [waiting, setWaiting] = useState(0)
+  const [toast, notify] = useToast()
+  return (
+    <Shell clinic={clinic} role="role.doctor" userName={profile.full_name} onLogout={onLogout} toast={toast}
+      tabs={[['queue', '🩺', 'tab.queue'], ['patients', '🧑', 'tab.patients'], ['attendance', '🕒', 'tab.attendance']]}
+      tab={tab} setTab={setTab} badges={{ queue: waiting }}>
+      {tab === 'attendance' ? <Attendance userId={profile.id} /> : <DoctorPanel clinic={clinic} notify={notify} view={tab} onWaiting={setWaiting} />}
+    </Shell>
+  )
+}
+
+// Doctor (ya Admin jo khud Doctor bhi ho) ka kaam: apni queue aur apne patients
+export function DoctorPanel({ clinic, notify, view, onWaiting }) {
   const [myId, setMyId] = useState(null)
   const [date, setDate] = useState(isoDate())
   const [appts, setAppts] = useState([])
@@ -15,7 +29,6 @@ export default function Doctor({ profile, clinic, onLogout }) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(null) // appointment id
   const [histPatient, setHistPatient] = useState(null)
-  const [toast, notify] = useToast()
 
   const load = useCallback(async () => {
     let id = myId
@@ -25,21 +38,21 @@ export default function Doctor({ profile, clinic, onLogout }) {
       setMyId(id)
     }
     if (!id) { setLoading(false); return }
-    const [a, t, p] = await Promise.all([
+    const [a, tr, p] = await Promise.all([
       supabase.from('appointments').select('*, patients(full_name, phone, patient_no, age, gender), appointment_treatments(*)')
         .eq('doctor_id', id).gte('start_at', dayStart(date).toISOString()).lt('start_at', dayStart(addDays(date, 1)).toISOString()).order('start_at'),
       supabase.from('treatments').select('*').eq('is_active', true).order('name'),
       supabase.from('patients').select('*').order('created_at', { ascending: false }).limit(2000),
     ])
     if (a.error) notify(a.error.message, true)
-    setAppts(a.data || []); setTreatments(t.data || []); setPatients(p.data || [])
+    setAppts(a.data || []); setTreatments(tr.data || []); setPatients(p.data || [])
     setLoading(false)
   }, [myId, date])
 
   useEffect(() => { load() }, [load])
   useEffect(() => {
-    const t = setInterval(() => { supabase.rpc('process_appointments').then(load) }, 60000)
-    return () => clearInterval(t)
+    const tm = setInterval(() => { supabase.rpc('process_appointments').then(load) }, 60000)
+    return () => clearInterval(tm)
   }, [load])
 
   const tokens = useMemo(() => {
@@ -49,17 +62,16 @@ export default function Doctor({ profile, clinic, onLogout }) {
     return m
   }, [appts])
 
-  const openAppt = appts.find((a) => a.id === open)
   const waiting = appts.filter((a) => ['scheduled', 'arrived'].includes(a.status)).length
+  useEffect(() => { onWaiting?.(waiting) }, [waiting])
+  const openAppt = appts.find((a) => a.id === open)
+
+  if (loading) return <div className="spinner" />
+  if (!myId) return <div className="card muted">Aap ka doctor record nahi mila. Admin se rabta karein.</div>
 
   return (
-    <Shell brand={clinic.name} role="Doctor" userName={profile.full_name} onLogout={onLogout} toast={toast}
-      tabs={[['queue', '🩺', 'Queue'], ['patients', '🧑', 'Patients'], ['attendance', '🕒', 'Attendance']]}
-      tab={tab} setTab={setTab} badges={{ queue: waiting }}>
-      {tab === 'attendance' && <Attendance userId={profile.id} />}
-      {tab === 'queue' && (loading ? <div className="spinner" /> : !myId ? (
-        <div className="card muted">Aap ka employee record nahi mila. Admin se rabta karein.</div>
-      ) : (
+    <>
+      {view === 'patients' ? <PatientSearch patients={patients} onOpen={setHistPatient} /> : (
         <>
           <div className="card inline">
             <button className="btn small" onClick={() => setDate(addDays(date, -1))}>‹</button>
@@ -75,7 +87,7 @@ export default function Doctor({ profile, clinic, onLogout }) {
                   <div>
                     <b>{tokens[a.id] ? `#${tokens[a.id]} · ` : ''}{a.patients?.full_name}</b> <span className="pill gray">ID #{a.patients?.patient_no}</span>
                     <div className="muted">{fmtTime(a.start_at)} – {fmtTime(a.end_at)} · {KIND[a.kind]}</div>
-                    {(a.appointment_treatments || []).length > 0 && <div className="muted">{a.appointment_treatments.map((t) => t.name).join(', ')}</div>}
+                    {(a.appointment_treatments || []).length > 0 && <div className="muted">{a.appointment_treatments.map((x) => x.name).join(', ')}</div>}
                   </div>
                   <span className={'pill ' + color}>{label}</span>
                 </div>
@@ -83,14 +95,10 @@ export default function Doctor({ profile, clinic, onLogout }) {
             )
           })}
         </>
-      ))}
-      {tab === 'patients' && <PatientSearch patients={patients} onOpen={setHistPatient} />}
-
-      {openAppt && (
-        <Consult appt={openAppt} treatments={treatments} clinic={clinic} notify={notify} close={() => setOpen(null)} reload={load} />
       )}
+      {openAppt && <Consult appt={openAppt} treatments={treatments} clinic={clinic} notify={notify} close={() => setOpen(null)} reload={load} />}
       {histPatient && <HistoryModal patient={histPatient} close={() => setHistPatient(null)} />}
-    </Shell>
+    </>
   )
 }
 
@@ -142,7 +150,7 @@ function HistoryModal({ patient, close }) {
   return (
     <div className="modal" onClick={close}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="row"><h3 style={{ margin: 0 }}>{patient.full_name} <span className="pill gray">ID #{patient.patient_no}</span></h3><button className="btn small" onClick={close}>Close</button></div>
+        <div className="row"><h3 style={{ margin: 0 }}>{patient.full_name} <span className="pill gray">ID #{patient.patient_no}</span></h3><button className="btn small" onClick={close}>{T('c.close')}</button></div>
         <div className="muted">{patient.phone || '—'}{patient.age ? ` · ${patient.age} yrs` : ''}{patient.gender ? ` · ${patient.gender}` : ''}</div>
         <h4>History</h4>
         <HistoryList rows={rows} />
@@ -207,7 +215,7 @@ function Consult({ appt: a, treatments, clinic, notify, close, reload }) {
             <div className="muted">{a.patients?.phone || '—'}{a.patients?.age ? ` · ${a.patients.age} yrs` : ''}{a.patients?.gender ? ` · ${a.patients.gender}` : ''}</div>
             <div className="muted">{fmtDT(a.start_at)} · {KIND[a.kind]}</div>
           </div>
-          <button className="btn small" onClick={close}>Close</button>
+          <button className="btn small" onClick={close}>{T('c.close')}</button>
         </div>
         <span className={'pill ' + STATUS[a.status][1]}>{STATUS[a.status][0]}</span>
 
@@ -244,9 +252,9 @@ function Consult({ appt: a, treatments, clinic, notify, close, reload }) {
             {f.followup && <label>Follow-up note<input value={f.followupNote} onChange={(e) => setF({ ...f, followupNote: e.target.value })} placeholder="jaise 1 hafte baad, stitches check" /></label>}
 
             <div className="actions">
-              {['scheduled', 'arrived'].includes(a.status) && <button className="btn" disabled={busy} onClick={start}>Start consult</button>}
-              <button className="btn" disabled={busy} onClick={saveDraft}>Save draft</button>
-              <button className="btn primary" disabled={busy} onClick={finish}>Finish consult</button>
+              {['scheduled', 'arrived'].includes(a.status) && <button className="btn" disabled={busy} onClick={start}>{T('b.start_consult')}</button>}
+              <button className="btn" disabled={busy} onClick={saveDraft}>{T('b.save_draft')}</button>
+              <button className="btn primary" disabled={busy} onClick={finish}>{T('b.finish_consult')}</button>
             </div>
           </>
         )}

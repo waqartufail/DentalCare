@@ -2,16 +2,22 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabase'
 import { effStatus, fmtDate, money, daysLeft, billingLabel } from '../util'
 import Attendance from '../components/Attendance'
+import { DoctorPanel } from './Doctor'
+import { ClinicHead, SideBrand } from '../components/ClinicBrand'
+import { PrefsButton } from '../components/Prefs'
+import { t } from '../i18n'
 import { Overview, Payroll, StaffAttendance, Settings } from './AdminExtra'
+import { t as T } from '../i18n'
 
-const TABS = [
-  ['dashboard', '📊', 'Dashboard'],
-  ['treatments', '🦷', 'Treatments'],
-  ['staff', '👥', 'Staff'],
-  ['finance', '💰', 'Finance'],
-  ['settings', '⚙️', 'Settings'],
+const BASE_TABS = [
+  ['dashboard', '📊', 'tab.dashboard'],
+  ['treatments', '🦷', 'tab.treatments'],
+  ['staff', '👥', 'tab.staff'],
+  ['finance', '💰', 'tab.finance'],
+  ['settings', '⚙️', 'tab.settings'],
 ]
-const ROLES = { admin: 'Admin', doctor: 'Doctor', receptionist: 'Receptionist', lab_technician: 'Lab Technician', helper: 'Helper' }
+const DOCTOR_TAB = ['doctor', '🩺', 'tab.doctor']
+const ROLES = { get admin() { return t('role.admin') }, get doctor() { return t('role.doctor') }, get receptionist() { return t('role.receptionist') }, get lab_technician() { return t('role.lab_technician') }, get helper() { return t('role.helper') } }
 const CATEGORIES = ['Rent', 'Salaries', 'Utilities', 'Lab', 'Materials', 'Equipment', 'Maintenance', 'Marketing', 'Other']
 
 const iso = (d) => {
@@ -24,6 +30,7 @@ const monthEnd = (d = new Date()) => iso(new Date(d.getFullYear(), d.getMonth() 
 
 export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
   const [tab, setTab] = useState('dashboard')
+  const [docView, setDocView] = useState('queue')
   const [treatments, setTreatments] = useState([])
   const [employees, setEmployees] = useState([])
   const [expenses, setExpenses] = useState([])
@@ -63,31 +70,46 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
     return true
   }
 
-  const ctx = { clinic, treatments, employees, expenses, plans, act, notify, load }
+  const isDoc = employees.some((e) => e.user_id === profile.id && e.role === 'doctor' && e.is_active)
+  const tabs = isDoc ? [BASE_TABS[0], DOCTOR_TAB, ...BASE_TABS.slice(1)] : BASE_TABS
+  const ctx = { clinic, treatments, employees, expenses, plans, act, notify, load, isDoc, userId: profile.id }
 
   return (
     <div className="shell">
       <aside className="side">
-        <div className="brand">🦷 {clinic.name}<small>Admin</small></div>
+        <SideBrand clinic={clinic} role={t('role.admin')} />
         <nav>
-          {TABS.map(([k, icon, label]) => (
-            <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><span>{icon}</span><span>{label}</span></button>
+          {tabs.map(([k, icon, label]) => (
+            <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><span>{icon}</span><span>{t(label)}</span></button>
           ))}
         </nav>
         <div className="side-foot">
           <div className="muted">{profile.full_name}</div>
-          <button className="btn small" onClick={onLogout}>Logout</button>
+          <PrefsButton />
+          <button className="btn small" onClick={onLogout}>{t('c.logout')}</button>
         </div>
       </aside>
 
       <main className="main">
+        <ClinicHead clinic={clinic} />
         <header className="topbar">
-          <h2>{TABS.find((t) => t[0] === tab)[2]}</h2>
-          <button className="btn small mobile-only" onClick={onLogout}>Logout</button>
+          <h2>{t((tabs.find((x) => x[0] === tab) || tabs[0])[2])}</h2>
+          <div className="topbar-actions mobile-only">
+            <PrefsButton />
+            <button className="btn small" onClick={onLogout}>{t('c.logout')}</button>
+          </div>
         </header>
         {loading ? <div className="spinner" /> : (
           <>
             {tab === 'dashboard' && <Dashboard {...ctx} go={setTab} onClinicChanged={onClinicChanged} userId={profile.id} />}
+            {tab === 'doctor' && isDoc && (
+              <>
+                <div className="chips">
+                  {[['queue', 'tab.queue'], ['patients', 'tab.patients']].map(([k, l]) => <button key={k} className={docView === k ? 'on' : ''} onClick={() => setDocView(k)}>{t(l)}</button>)}
+                </div>
+                <DoctorPanel clinic={clinic} notify={notify} view={docView} />
+              </>
+            )}
             {tab === 'treatments' && <Treatments {...ctx} />}
             {tab === 'staff' && <Staff {...ctx} />}
             {tab === 'finance' && <Finance {...ctx} userId={profile.id} />}
@@ -97,9 +119,9 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
       </main>
 
       <nav className="tabbar">
-        {TABS.map(([k, icon, label]) => (
+        {tabs.map(([k, icon, label]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
-            <span className="ico">{icon}</span><span>{label}</span>
+            <span className="ico">{icon}</span><span>{t(label)}</span>
           </button>
         ))}
       </nav>
@@ -171,11 +193,11 @@ function ClinicEdit({ clinic, close, onSaved, notify }) {
       <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
         <h3>Clinic profile</h3>
         <label>Clinic name<input value={f.name} onChange={set('name')} required /></label>
-        <label>Phone<input value={f.phone} onChange={set('phone')} /></label>
-        <label>City<input value={f.city} onChange={set('city')} /></label>
-        <label>Address<input value={f.address} onChange={set('address')} /></label>
+        <label>{T('f.phone')}<input value={f.phone} onChange={set('phone')} /></label>
+        <label>{T('f.city')}<input value={f.city} onChange={set('city')} /></label>
+        <label>{T('f.address')}<input value={f.address} onChange={set('address')} /></label>
         {err && <div className="alert">{err}</div>}
-        <div className="actions"><button className="btn primary">Save</button><button type="button" className="btn" onClick={close}>Cancel</button></div>
+        <div className="actions"><button className="btn primary">{T('c.save')}</button><button type="button" className="btn" onClick={close}>{T('c.cancel')}</button></div>
       </form>
     </div>
   )
@@ -209,9 +231,9 @@ function Treatments({ clinic, treatments, act, notify }) {
             <div className="big small-big">{money(t.fee)}</div>
           </div>
           <div className="actions">
-            <button className="btn small" onClick={() => setForm({ ...t, fee: String(t.fee) })}>Edit</button>
-            <button className="btn small" onClick={() => act(() => supabase.from('treatments').update({ is_active: !t.is_active }).eq('id', t.id), t.is_active ? 'Treatment inactive' : 'Treatment active')}>{t.is_active ? 'Deactivate' : 'Activate'}</button>
-            <button className="btn small danger" onClick={() => { if (confirm(`Delete "${t.name}"?`)) act(() => supabase.from('treatments').delete().eq('id', t.id), 'Deleted') }}>Delete</button>
+            <button className="btn small" onClick={() => setForm({ ...t, fee: String(t.fee) })}>{T('c.edit')}</button>
+            <button className="btn small" onClick={() => act(() => supabase.from('treatments').update({ is_active: !t.is_active }).eq('id', t.id), t.is_active ? 'Treatment inactive' : 'Treatment active')}>{t.is_active ? T('c.deactivate') : T('c.activate')}</button>
+            <button className="btn small danger" onClick={() => { if (confirm(`Delete "${t.name}"?`)) act(() => supabase.from('treatments').delete().eq('id', t.id), 'Deleted') }}>{T('c.delete')}</button>
           </div>
         </div>
       ))}
@@ -223,7 +245,7 @@ function Treatments({ clinic, treatments, act, notify }) {
             <label>Fee<input type="number" min="0" value={form.fee} onChange={(e) => setForm({ ...form, fee: e.target.value })} required inputMode="decimal" /></label>
             <label className="check"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> Active</label>
             <label className="check"><input type="checkbox" checked={!!form.needs_lab} onChange={(e) => setForm({ ...form, needs_lab: e.target.checked })} /> Is treatment me Lab ka kaam hai (braces, dentures, crown...)</label>
-            <div className="actions"><button className="btn primary">Save</button><button type="button" className="btn" onClick={() => setForm(null)}>Cancel</button></div>
+            <div className="actions"><button className="btn primary">{T('c.save')}</button><button type="button" className="btn" onClick={() => setForm(null)}>{T('c.cancel')}</button></div>
           </form>
         </div>
       )}
@@ -232,7 +254,7 @@ function Treatments({ clinic, treatments, act, notify }) {
 }
 
 /* ------------------------------ Staff ------------------------------ */
-function Staff({ clinic, employees, act, notify }) {
+function Staff({ clinic, employees, act, notify, isDoc, userId }) {
   const [form, setForm] = useState(null)
   const empty = { id: null, full_name: '', email: '', phone: '', role: 'receptionist', joining_date: today(), salary: '', overtime_enabled: false }
 
@@ -249,6 +271,13 @@ function Staff({ clinic, employees, act, notify }) {
 
   return (
     <>
+      <div className="card">
+        <label className="check" style={{ margin: 0, color: 'var(--text)' }}>
+          <input type="checkbox" checked={isDoc} onChange={(e) => act(() => supabase.rpc('set_admin_as_doctor', { p_on: e.target.checked }), e.target.checked ? 'Ab aap Doctor bhi hain: appointments me aap ka naam aayega' : 'Doctor mode band (purani history mehfooz hai)')} />
+          <b>{t('staff.also_doctor')}</b>
+        </label>
+        <p className="muted" style={{ margin: '.4rem 0 0' }}>Clinic me sirf ek Admin hota hai. Admin chahe to khud ko Doctor bhi mark kar sakta hai, phir uske slots aur patients Doctor tab me aate hain.</p>
+      </div>
       <button className="btn primary" onClick={() => setForm(empty)}>+ Register employee</button>
       <div className="card muted" style={{ marginTop: '.8rem' }}>
         Employee register karne ke baad usay is app me <b>isi email</b> se “Create account” (ya Google se sign in) karna hoga. Us waqt uska access khud ban jayega.
@@ -268,11 +297,11 @@ function Staff({ clinic, employees, act, notify }) {
               {m.salary != null && <div className="muted">{money(m.salary)}/mo</div>}
             </div>
           </div>
-          <div className="actions">
-            <button className="btn small" onClick={() => setForm({ ...m, phone: m.phone || '', joining_date: m.joining_date || '', salary: m.salary ?? '' })}>Edit</button>
-            <button className="btn small" onClick={() => act(() => supabase.from('employees').update({ is_active: !m.is_active }).eq('id', m.id), m.is_active ? 'Access band kar diya' : 'Access bahal kar diya')}>{m.is_active ? 'Deactivate' : 'Activate'}</button>
-            <button className="btn small danger" onClick={() => { if (confirm(`${m.full_name} ko delete karein? Unka login access bhi khatam ho jayega.`)) act(() => supabase.from('employees').delete().eq('id', m.id), 'Employee deleted') }}>Delete</button>
-          </div>
+          {m.user_id === userId ? <div className="muted" style={{ marginTop: '.5rem' }}>👑 Owner (Admin) · Doctor mode upar wale checkbox se</div> : <div className="actions">
+            <button className="btn small" onClick={() => setForm({ ...m, phone: m.phone || '', joining_date: m.joining_date || '', salary: m.salary ?? '' })}>{T('c.edit')}</button>
+            <button className="btn small" onClick={() => act(() => supabase.from('employees').update({ is_active: !m.is_active }).eq('id', m.id), m.is_active ? 'Access band kar diya' : 'Access bahal kar diya')}>{m.is_active ? T('c.deactivate') : T('c.activate')}</button>
+            <button className="btn small danger" onClick={() => { if (confirm(`${m.full_name} ko delete karein? Unka login access bhi khatam ho jayega.`)) act(() => supabase.from('employees').delete().eq('id', m.id), 'Employee deleted') }}>{T('c.delete')}</button>
+          </div>}
         </div>
       ))}
       {form && (
@@ -283,18 +312,18 @@ function Staff({ clinic, employees, act, notify }) {
             <label>Email * <span className="muted">(isi se login karega)</span>
               <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required disabled={!!form.user_id} />
             </label>
-            <label>Role
+            <label>{T('f.role')}
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-                {Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                {Object.entries(ROLES).filter(([k]) => k !== 'admin').map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </label>
             <div className="two-col">
-              <label>Phone<input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} inputMode="tel" /></label>
+              <label>{T('f.phone')}<input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} inputMode="tel" /></label>
               <label>Joining date<input type="date" value={form.joining_date} onChange={(e) => setForm({ ...form, joining_date: e.target.value })} /></label>
             </div>
             <label>Monthly salary (optional)<input type="number" min="0" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} inputMode="decimal" /></label>
             <label className="check"><input type="checkbox" checked={!!form.overtime_enabled} onChange={(e) => setForm({ ...form, overtime_enabled: e.target.checked })} /> Overtime calculate karein (roz ke kaam ke ghanton ke baad)</label>
-            <div className="actions"><button className="btn primary">Save</button><button type="button" className="btn" onClick={() => setForm(null)}>Cancel</button></div>
+            <div className="actions"><button className="btn primary">{T('c.save')}</button><button type="button" className="btn" onClick={() => setForm(null)}>{T('c.cancel')}</button></div>
           </form>
         </div>
       )}
@@ -346,8 +375,8 @@ function Expenses({ clinic, expenses, act, notify, userId }) {
             <div className="big small-big">{money(x.amount)}</div>
           </div>
           <div className="actions">
-            <button className="btn small" onClick={() => setForm({ ...x, amount: String(x.amount), note: x.note || '' })}>Edit</button>
-            <button className="btn small danger" onClick={() => { if (confirm('Is expense ko delete karein?')) act(() => supabase.from('expenses').delete().eq('id', x.id), 'Deleted') }}>Delete</button>
+            <button className="btn small" onClick={() => setForm({ ...x, amount: String(x.amount), note: x.note || '' })}>{T('c.edit')}</button>
+            <button className="btn small danger" onClick={() => { if (confirm('Is expense ko delete karein?')) act(() => supabase.from('expenses').delete().eq('id', x.id), 'Deleted') }}>{T('c.delete')}</button>
           </div>
         </div>
       ))}
@@ -362,11 +391,11 @@ function Expenses({ clinic, expenses, act, notify, userId }) {
                   {[...new Set([...CATEGORIES, form.category])].map((c) => <option key={c}>{c}</option>)}
                 </select>
               </label>
-              <label>Amount<input type="number" min="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required inputMode="decimal" /></label>
+              <label>{T('f.amount')}<input type="number" min="0" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required inputMode="decimal" /></label>
             </div>
             <label>Date<input type="date" value={form.expense_date} onChange={(e) => setForm({ ...form, expense_date: e.target.value })} required /></label>
-            <label>Note<input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="optional" /></label>
-            <div className="actions"><button className="btn primary">Save</button><button type="button" className="btn" onClick={() => setForm(null)}>Cancel</button></div>
+            <label>{T('f.note')}<input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="optional" /></label>
+            <div className="actions"><button className="btn primary">{T('c.save')}</button><button type="button" className="btn" onClick={() => setForm(null)}>{T('c.cancel')}</button></div>
           </form>
         </div>
       )}

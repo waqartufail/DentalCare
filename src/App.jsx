@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase, configured } from './supabase'
 import { effStatus } from './util'
+import { getLang } from './i18n'
 import Auth from './pages/Auth.jsx'
 import ClinicRegister from './pages/ClinicRegister.jsx'
 import Executive from './pages/Executive.jsx'
@@ -36,7 +37,7 @@ function TestBar({ profile, onSwitched }) {
   )
 }
 
-export default function App() {
+function Main() {
   const [session, setSession] = useState(null)
   const [ctx, setCtx] = useState(null) // { profile, clinic }
   const [loading, setLoading] = useState(true)
@@ -114,4 +115,15 @@ export default function App() {
     }
   }
   return <>{bar}{screen}</>
+}
+
+// Zabaan badalne par poori screen naye sire se bantī hai (session login hi rehta hai)
+export default function App() {
+  const [lang, setLang] = useState(getLang())
+  useEffect(() => {
+    const f = () => setLang(getLang())
+    window.addEventListener('dc-lang', f)
+    return () => window.removeEventListener('dc-lang', f)
+  }, [])
+  return <Main key={lang} />
 }

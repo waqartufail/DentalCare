@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { t, getLocale } from './i18n'
 
 export function useToast() {
   const [toast, setToast] = useState(null)
@@ -16,8 +17,8 @@ export const isoDate = (d = new Date()) => {
 export const dayStart = (dateStr) => new Date(dateStr + 'T00:00:00')
 export const addDays = (dateStr, n) => { const d = dayStart(dateStr); d.setDate(d.getDate() + n); return isoDate(d) }
 
-export const fmtTime = (d) => (d ? new Date(d).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : '—')
-export const fmtDT = (d) => (d ? `${new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}, ${fmtTime(d)}` : '—')
+export const fmtTime = (d) => (d ? new Date(d).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit', hour12: true }) : '—')
+export const fmtDT = (d) => (d ? `${new Date(d).toLocaleDateString(getLocale(), { day: '2-digit', month: 'short' })}, ${fmtTime(d)}` : '—')
 export const fmtHM = (min) => { const m = Math.max(0, Math.round(min || 0)); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` }
 
 export function waLink(phone, text, cc = '92') {
@@ -31,8 +32,11 @@ export const apptTotal = (a) => (a.appointment_treatments || []).reduce((s, t) =
 export const apptPaid = (a) => (a.patient_payments || []).reduce((s, p) => s + Number(p.amount), 0)
 
 export const STATUS = {
-  scheduled: ['Scheduled', 'blue'], arrived: ['Arrived', 'amber'], in_progress: ['In consult', 'amber'],
-  completed: ['Done', 'green'], cancelled: ['Cancelled', 'gray'], no_show: ['No-show', 'red'],
+  get scheduled() { return [t('st.scheduled'), 'blue'] }, get arrived() { return [t('st.arrived'), 'amber'] },
+  get in_progress() { return [t('st.in_progress'), 'amber'] }, get completed() { return [t('st.completed'), 'green'] },
+  get cancelled() { return [t('st.cancelled'), 'gray'] }, get no_show() { return [t('st.no_show'), 'red'] },
 }
-export const KIND = { new: 'Visit', followup: 'Follow-up', lab_delivery: 'Lab fitting' }
+export const KIND = {
+  get new() { return t('kind.new') }, get followup() { return t('kind.followup') }, get lab_delivery() { return t('kind.lab_delivery') },
+}
 export const ACTIVE = ['scheduled', 'arrived', 'in_progress']

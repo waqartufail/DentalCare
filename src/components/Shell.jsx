@@ -1,26 +1,35 @@
-export default function Shell({ brand, role, userName, tabs, tab, setTab, badges = {}, onLogout, toast, children }) {
-  const cur = tabs.find((t) => t[0] === tab) || tabs[0]
+import { t } from '../i18n'
+import { PrefsButton } from './Prefs'
+import { ClinicHead, SideBrand } from './ClinicBrand'
+
+export default function Shell({ clinic, role, userName, tabs, tab, setTab, badges = {}, onLogout, toast, children }) {
+  const cur = tabs.find((x) => x[0] === tab) || tabs[0]
   return (
     <div className="shell">
       <aside className="side">
-        <div className="brand">🦷 {brand}<small>{role}</small></div>
+        <SideBrand clinic={clinic} role={t(role)} />
         <nav>
           {tabs.map(([k, icon, label]) => (
             <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
-              <span>{icon}</span><span>{label}</span>
+              <span>{icon}</span><span>{t(label)}</span>
               {badges[k] > 0 && <b className="badge">{badges[k]}</b>}
             </button>
           ))}
         </nav>
         <div className="side-foot">
           <div className="muted">{userName}</div>
-          <button className="btn small" onClick={onLogout}>Logout</button>
+          <PrefsButton />
+          <button className="btn small" onClick={onLogout}>{t('c.logout')}</button>
         </div>
       </aside>
       <main className="main">
+        <ClinicHead clinic={clinic} />
         <header className="topbar">
-          <h2>{cur[2]}</h2>
-          <button className="btn small mobile-only" onClick={onLogout}>Logout</button>
+          <h2>{t(cur[2])}</h2>
+          <div className="topbar-actions mobile-only">
+            <PrefsButton />
+            <button className="btn small" onClick={onLogout}>{t('c.logout')}</button>
+          </div>
         </header>
         {children}
       </main>
@@ -28,7 +37,7 @@ export default function Shell({ brand, role, userName, tabs, tab, setTab, badges
         {tabs.map(([k, icon, label]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
             <span className="ico">{icon}{badges[k] > 0 && <b className="badge">{badges[k]}</b>}</span>
-            <span>{label}</span>
+            <span>{t(label)}</span>
           </button>
         ))}
       </nav>

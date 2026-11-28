@@ -3,6 +3,7 @@ import { supabase } from '../supabase'
 import Shell from '../components/Shell'
 import Attendance from '../components/Attendance'
 import { useToast, fmtDT } from '../lib'
+import { t as T } from '../i18n'
 
 export default function Lab({ profile, clinic, onLogout }) {
   const [tab, setTab] = useState('pending')
@@ -40,8 +41,8 @@ export default function Lab({ profile, clinic, onLogout }) {
   const list = tab === 'pending' ? pending : done
 
   return (
-    <Shell brand={clinic.name} role="Lab Technician" userName={profile.full_name} onLogout={onLogout} toast={toast}
-      tabs={[['pending', '🧪', 'Pending'], ['ready', '✅', 'Ready'], ['attendance', '🕒', 'Attendance']]}
+    <Shell clinic={clinic} role="role.lab_technician" userName={profile.full_name} onLogout={onLogout} toast={toast}
+      tabs={[['pending', '🧪', 'tab.pending'], ['ready', '✅', 'tab.ready'], ['attendance', '🕒', 'tab.attendance']]}
       tab={tab} setTab={setTab} badges={{ pending: pending.length }}>
       {tab === 'attendance' ? <Attendance userId={profile.id} /> : loading ? <div className="spinner" /> : (
         <>
@@ -58,7 +59,7 @@ export default function Lab({ profile, clinic, onLogout }) {
                 <span className={'pill ' + (o.status === 'ready' ? 'green' : 'amber')}>{o.status}</span>
               </div>
               {o.status === 'pending' && (
-                <div className="actions"><button className="btn primary" disabled={busy === o.id} onClick={() => ready(o)}>{busy === o.id ? 'Please wait…' : 'Mark Ready'}</button></div>
+                <div className="actions"><button className="btn primary" disabled={busy === o.id} onClick={() => ready(o)}>{busy === o.id ? T('auth.wait') : T('b.mark_ready')}</button></div>
               )}
             </div>
           ))}

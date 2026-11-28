@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { fmtDate, money } from '../util'
 import { isoDate, fmtTime, fmtHM } from '../lib'
+import { t as T } from '../i18n'
 
 const ROLE_LABEL = { admin: 'Admin', doctor: 'Doctor', receptionist: 'Receptionist', lab_technician: 'Lab Technician', helper: 'Helper' }
 
@@ -154,6 +155,81 @@ export function StaffAttendance({ employees }) {
 /* ------------------------------ Settings ------------------------------ */
 const DAYS = [[1, 'Mon'], [2, 'Tue'], [3, 'Wed'], [4, 'Thu'], [5, 'Fri'], [6, 'Sat'], [7, 'Sun']]
 
+// Logo ko chhota (max 512px) karke PNG me badal deta hai taake tez load ho
+function resizeImage(file, max = 512) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const w = img.naturalWidth || img.width || max
+      const h = img.naturalHeight || img.height || max
+      const k = Math.min(1, max / Math.max(w, h))
+      const c = document.createElement('canvas')
+      c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k))
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height)
+      URL.revokeObjectURL(url)
+      c.toBlob((b) => (b ? resolve(b) : reject(new Error('Image convert nahi hui'))), 'image/png')
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Ye image file parhi nahi ja saki')) }
+    img.src = url
+  })
+}
+
+function LogoCard({ clinic, notify, onSaved }) {
+  const [busy, setBusy] = useState(false)
+  const path = `${clinic.id}/logo.png`
+
+  async function pick(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) return notify('Sirf image file chunein (PNG, JPG, SVG...)', true)
+    if (file.size > 8 * 1024 * 1024) return notify('Image 8 MB se chhoti honi chahiye', true)
+    setBusy(true)
+    try {
+      const blob = await resizeImage(file)
+      const up = await supabase.storage.from('clinic-logos').upload(path, blob, { upsert: true, contentType: 'image/png', cacheControl: '3600' })
+      if (up.error) throw up.error
+      const { data } = supabase.storage.from('clinic-logos').getPublicUrl(path)
+      const { error } = await supabase.rpc('set_clinic_logo', { p_url: `${data.publicUrl}?v=${Date.now()}` })
+      if (error) throw error
+      notify('Logo save ho gaya ✅')
+      onSaved()
+    } catch (err) {
+      notify(err.message + ' (07_phase4.sql chali hui ho aur "clinic-logos" bucket bana ho)', true)
+    }
+    setBusy(false)
+  }
+
+  async function remove() {
+    setBusy(true)
+    await supabase.storage.from('clinic-logos').remove([path])
+    const { error } = await supabase.rpc('set_clinic_logo', { p_url: null })
+    setBusy(false)
+    if (error) return notify(error.message, true)
+    notify('Logo hata diya gaya')
+    onSaved()
+  }
+
+  return (
+    <div className="card">
+      <h3>{T('logo.title')}</h3>
+      <div className="clinic-head" style={{ marginBottom: '.6rem' }}>
+        {clinic.logo_url ? <img src={clinic.logo_url} alt="" /> : <span className="logo-fallback">🦷</span>}
+        <b>{clinic.name}</b>
+      </div>
+      <p className="muted">Ye logo clinic ke har user ko login ke baad upar naam ke sath dikhega. Square ya lamba, kisi bhi shakal ka PNG/JPG/SVG chalega, screen ke hisab se khud adjust hota hai.</p>
+      <div className="actions">
+        <label className="btn primary" style={{ margin: 0, cursor: 'pointer', color: 'var(--on-primary)' }}>
+          {busy ? T('auth.wait') : T('logo.upload')}
+          <input type="file" accept="image/*" onChange={pick} disabled={busy} style={{ display: 'none' }} />
+        </label>
+        {clinic.logo_url && <button type="button" className="btn danger" disabled={busy} onClick={remove}>{T('logo.remove')}</button>}
+      </div>
+    </div>
+  )
+}
+
 export function Settings({ clinic, notify, onSaved }) {
   const [f, setF] = useState({
     open_time: (clinic.open_time || '09:00').slice(0, 5), close_time: (clinic.close_time || '17:00').slice(0, 5),
@@ -194,6 +270,8 @@ export function Settings({ clinic, notify, onSaved }) {
   }
 
   return (
+    <>
+    <LogoCard clinic={clinic} notify={notify} onSaved={onSaved} />
     <form onSubmit={save}>
       <div className="card">
         <h3>Appointments</h3>
@@ -241,7 +319,8 @@ export function Settings({ clinic, notify, onSaved }) {
         {f.lat === '' && <div className="alert">Jab tak location set nahi hogi, kisi ki attendance mark nahi hogi.</div>}
       </div>
 
-      <button className="btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</button>
+      <button className="btn primary" disabled={busy}>{busy ? T('auth.wait') : T('c.save')}</button>
     </form>
+    </>
   )
 }

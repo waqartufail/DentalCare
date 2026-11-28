@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabase'
 import { fmtTime, fmtHM, isoDate } from '../lib'
 import { fmtDate } from '../util'
+import { t } from '../i18n'
 
 function getPosition() {
   return new Promise((resolve, reject) => {
@@ -61,23 +62,23 @@ export default function Attendance({ userId, autoCheckIn = false }) {
   return (
     <>
       <div className="card">
-        <h3>Aaj ki attendance</h3>
+        <h3>{t('att.today')}</h3>
         {loading ? <div className="spinner" /> : (
           <>
-            <div className="row"><span>Check-in</span><b>{today?.check_in ? fmtTime(today.check_in) : 'Abhi nahi'}</b></div>
-            <div className="row"><span>Check-out</span><b>{today?.check_out ? fmtTime(today.check_out) : '—'}</b></div>
+            <div className="row"><span>{t('att.checkin')}</span><b>{today?.check_in ? fmtTime(today.check_in) : t('att.not_yet')}</b></div>
+            <div className="row"><span>{t('att.checkout')}</span><b>{today?.check_out ? fmtTime(today.check_out) : '—'}</b></div>
             {today?.check_out && <div className="row"><span>Kaam ka waqt</span><b>{fmtHM(today.worked_minutes)}{today.overtime_minutes > 0 ? ` (OT ${fmtHM(today.overtime_minutes)})` : ''}</b></div>}
             {msg && <div className={'alert' + (msg.bad ? '' : ' ok')}>{msg.text}</div>}
             <div className="actions">
-              <button className="btn primary" disabled={busy || !!today?.check_in} onClick={() => run('in')}>{busy ? 'Location check ho rahi hai…' : 'Check In'}</button>
-              <button className="btn" disabled={busy || !today?.check_in || !!today?.check_out} onClick={() => run('out')}>Check Out</button>
+              <button className="btn primary" disabled={busy || !!today?.check_in} onClick={() => run('in')}>{busy ? t('auth.wait') : t('att.checkin')}</button>
+              <button className="btn" disabled={busy || !today?.check_in || !!today?.check_out} onClick={() => run('out')}>{t('att.checkout')}</button>
             </div>
             <p className="muted" style={{ marginTop: '.8rem' }}>Attendance sirf clinic ke andar (Admin ki set ki hui location ke qareeb) mark hoti hai. Phone/browser ki location on rakhein.</p>
           </>
         )}
       </div>
       <div className="card">
-        <div className="row"><h3 style={{ margin: 0 }}>Is mahine</h3><span className="muted">{days} din · OT {fmtHM(ot)}</span></div>
+        <div className="row"><h3 style={{ margin: 0 }}>{t('att.this_month')}</h3><span className="muted">{days} din · OT {fmtHM(ot)}</span></div>
         {rows.length === 0 && <p className="muted">Is mahine abhi koi attendance nahi.</p>}
         {rows.map((r) => (
           <div className="row" key={r.id}>

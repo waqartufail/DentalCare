@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabase'
 import { effStatus, fmtDate, money, daysLeft, billingLabel } from '../util'
+import { t, t as T } from '../i18n'
+import { PrefsButton } from '../components/Prefs'
 
 const TABS = [
-  ['dashboard', '📊', 'Dashboard'],
-  ['requests', '📥', 'Requests'],
-  ['clinics', '🏥', 'Clinics'],
-  ['plans', '💳', 'Fee Plans'],
-  ['payments', '🧾', 'Payments'],
+  ['dashboard', '📊', 'tab.dashboard'],
+  ['requests', '📥', 'tab.requests'],
+  ['clinics', '🏥', 'tab.clinics'],
+  ['plans', '💳', 'tab.plans'],
+  ['payments', '🧾', 'tab.payments'],
 ]
 
 export default function Executive({ profile, onLogout }) {
@@ -50,25 +52,26 @@ export default function Executive({ profile, onLogout }) {
   return (
     <div className="shell">
       <aside className="side">
-        <div className="brand">🦷 DentCare <small>Executive</small></div>
+        <div className="brand">🦷 DentCare <small>{T('role.executive')}</small></div>
         <nav>
           {TABS.map(([k, icon, label]) => (
             <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
-              <span>{icon}</span><span>{label}</span>
+              <span>{icon}</span><span>{T(label)}</span>
               {k === 'requests' && pending.length > 0 && <b className="badge">{pending.length}</b>}
             </button>
           ))}
         </nav>
         <div className="side-foot">
-          <div className="muted">{profile.full_name || 'Executive'}</div>
-          <button className="btn small" onClick={onLogout}>Logout</button>
+          <div className="muted">{profile.full_name || T('role.executive')}</div>
+          <PrefsButton />
+          <button className="btn small" onClick={onLogout}>{T('c.logout')}</button>
         </div>
       </aside>
 
       <main className="main">
         <header className="topbar">
-          <h2>{TABS.find((t) => t[0] === tab)[2]}</h2>
-          <button className="btn small mobile-only" onClick={onLogout}>Logout</button>
+          <h2>{T(TABS.find((x) => x[0] === tab)[2])}</h2>
+          <div className="topbar-actions mobile-only"><PrefsButton /><button className="btn small" onClick={onLogout}>{T('c.logout')}</button></div>
         </header>
         {loading ? <div className="spinner" /> : (
           <>
@@ -85,7 +88,7 @@ export default function Executive({ profile, onLogout }) {
         {TABS.map(([k, icon, label]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
             <span className="ico">{icon}{k === 'requests' && pending.length > 0 && <b className="badge">{pending.length}</b>}</span>
-            <span>{label.split(' ')[0]}</span>
+            <span>{T(label).split(' ')[0]}</span>
           </button>
         ))}
       </nav>
@@ -125,16 +128,16 @@ function Dashboard({ clinics, payments, go }) {
   return (
     <>
       <div className="grid stats">
-        {stat('Pending requests', s.pending, 'amber', 'requests')}
-        {stat('On trial', s.trial, 'blue', 'clinics')}
-        {stat('Active (paid)', s.active, 'green', 'clinics')}
-        {stat('Expired', s.expired, 'red', 'clinics')}
-        {stat('Suspended', s.suspended, 'gray', 'clinics')}
-        {stat('Total clinics', clinics.filter((c) => c.status !== 'pending' && c.status !== 'rejected').length, 'teal', 'clinics')}
+        {stat(T('dash.pending_requests'), s.pending, 'amber', 'requests')}
+        {stat(T('dash.on_trial'), s.trial, 'blue', 'clinics')}
+        {stat(T('dash.active_paid'), s.active, 'green', 'clinics')}
+        {stat(T('dash.expired'), s.expired, 'red', 'clinics')}
+        {stat(T('dash.suspended'), s.suspended, 'gray', 'clinics')}
+        {stat(T('dash.total_clinics'), clinics.filter((c) => c.status !== 'pending' && c.status !== 'rejected').length, 'teal', 'clinics')}
       </div>
       <div className="grid two">
-        <div className="card"><div className="muted">Revenue this month</div><div className="big">{money(s.monthRevenue)}</div></div>
-        <div className="card"><div className="muted">Total revenue</div><div className="big">{money(s.totalRevenue)}</div></div>
+        <div className="card"><div className="muted">{T('dash.revenue_month')}</div><div className="big">{money(s.monthRevenue)}</div></div>
+        <div className="card"><div className="muted">{T('dash.revenue_total')}</div><div className="big">{money(s.totalRevenue)}</div></div>
       </div>
       <div className="card">
         <h3>Expiring in next 7 days</h3>
@@ -178,8 +181,8 @@ function Requests({ clinics, act }) {
             </div>
           </div>
           <div className="actions">
-            <button className="btn primary" onClick={() => act(() => supabase.rpc('approve_clinic', { p_id: c.id, p_trial_days: days }), `${c.name} approved — ${days} din ka trial shuru`)}>Approve</button>
-            <button className="btn danger" onClick={() => { if (confirm(`Reject ${c.name}?`)) act(() => supabase.rpc('reject_clinic', { p_id: c.id }), 'Request rejected') }}>Reject</button>
+            <button className="btn primary" onClick={() => act(() => supabase.rpc('approve_clinic', { p_id: c.id, p_trial_days: days }), `${c.name} approved — ${days} din ka trial shuru`)}>{T('b.approve')}</button>
+            <button className="btn danger" onClick={() => { if (confirm(`Reject ${c.name}?`)) act(() => supabase.rpc('reject_clinic', { p_id: c.id }), 'Request rejected') }}>{T('b.reject')}</button>
           </div>
         </div>
       ))}
@@ -189,7 +192,7 @@ function Requests({ clinics, act }) {
           {rejected.map((c) => (
             <div className="row" key={c.id}>
               <div><b>{c.name}</b><div className="muted">{c.owner_name} · {fmtDate(c.created_at)}</div></div>
-              <button className="btn small danger" onClick={() => { if (confirm('Delete permanently?')) act(() => supabase.from('clinics').delete().eq('id', c.id), 'Deleted') }}>Delete</button>
+              <button className="btn small danger" onClick={() => { if (confirm('Delete permanently?')) act(() => supabase.from('clinics').delete().eq('id', c.id), 'Deleted') }}>{T('c.delete')}</button>
             </div>
           ))}
         </details>
@@ -266,7 +269,7 @@ function ClinicDetail({ clinic: c, plans, act, close }) {
       <div className="sheet" onClick={(ev) => ev.stopPropagation()}>
         <div className="row">
           <h3 style={{ margin: 0 }}>{c.name}</h3>
-          <button className="btn small" onClick={close}>Close</button>
+          <button className="btn small" onClick={close}>{T('c.close')}</button>
         </div>
         <span className={'pill ' + STATUS_COLOR[e]}>{e}</span>
         <div className="kv">
@@ -286,14 +289,14 @@ function ClinicDetail({ clinic: c, plans, act, close }) {
           </select>
         </label>
         <div className="two-col">
-          <label>Amount<input type="number" value={amount} onChange={(ev) => setAmount(ev.target.value)} /></label>
+          <label>{T('f.amount')}<input type="number" value={amount} onChange={(ev) => setAmount(ev.target.value)} /></label>
           <label>Method
             <select value={method} onChange={(ev) => setMethod(ev.target.value)}>
               {['Cash', 'Bank transfer', 'JazzCash', 'Easypaisa', 'Card', 'Other'].map((m) => <option key={m}>{m}</option>)}
             </select>
           </label>
         </div>
-        <label>Note<input value={note} onChange={(ev) => setNote(ev.target.value)} placeholder="optional" /></label>
+        <label>{T('f.note')}<input value={note} onChange={(ev) => setNote(ev.target.value)} placeholder="optional" /></label>
         <button className="btn primary" onClick={pay} disabled={!plan || !amount}>Save payment & activate</button>
 
         {!c.is_lifetime && (e === 'trial' || e === 'expired' || e === 'suspended') && (
@@ -350,8 +353,8 @@ function Plans({ plans, clinics, act, notify }) {
               <div className="big small-big">{money(p.price, p.currency)}</div>
             </div>
             <div className="actions">
-              <button className="btn small" onClick={() => setForm({ ...p, price: String(p.price) })}>Edit</button>
-              <button className="btn small" onClick={() => act(() => supabase.from('plans').update({ is_active: !p.is_active }).eq('id', p.id), p.is_active ? 'Plan deactivated' : 'Plan activated')}>{p.is_active ? 'Deactivate' : 'Activate'}</button>
+              <button className="btn small" onClick={() => setForm({ ...p, price: String(p.price) })}>{T('c.edit')}</button>
+              <button className="btn small" onClick={() => act(() => supabase.from('plans').update({ is_active: !p.is_active }).eq('id', p.id), p.is_active ? 'Plan deactivated' : 'Plan activated')}>{p.is_active ? T('c.deactivate') : T('c.activate')}</button>
             </div>
           </div>
         )
@@ -372,8 +375,8 @@ function Plans({ plans, clinics, act, notify }) {
             </div>
             <label className="check"><input type="checkbox" checked={form.is_active} onChange={(ev) => setForm({ ...form, is_active: ev.target.checked })} /> Active</label>
             <div className="actions">
-              <button className="btn primary">Save</button>
-              <button type="button" className="btn" onClick={() => setForm(null)}>Cancel</button>
+              <button className="btn primary">{T('c.save')}</button>
+              <button type="button" className="btn" onClick={() => setForm(null)}>{T('c.cancel')}</button>
             </div>
           </form>
         </div>
