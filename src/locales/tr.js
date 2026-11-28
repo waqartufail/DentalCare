@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'Muayeneyi bitir', 'b.book': 'Randevu al', 'b.register_patient': '+ Kayıt',
   'h.clinic_profile': 'Klinik profili',
   'pref.title': 'Görünüm ve dil', 'pref.theme': 'Tema', 'pref.language': 'Dil', 'pref.light': 'Açık temalar', 'pref.dark': 'Koyu temalar',
-  'th.teal': 'Camgöbeği', 'th.ocean': 'Okyanus', 'th.purple': 'Mor', 'th.rose': 'Gül', 'th.green': 'Yeşil', 'th.orange': 'Gün batımı',
-  'th.slate': 'Arduvaz', 'th.midnight': 'Gece yarısı', 'th.charcoal': 'Kömür', 'th.amoled': 'AMOLED siyah',
+  'th.mint': 'Nane Esintisi', 'th.ocean': 'Okyanus Dalgası', 'th.lavender': 'Lavanta Rüyası', 'th.rose': 'Gül Yaprağı', 'th.meadow': 'Taze Çayır', 'th.sunset': 'Gün Batımı Parıltısı', 'th.berry': 'Orman Meyvesi', 'th.sky': 'Gökyüzü Şekeri', 'th.emerald': 'Zümrüt Deniz', 'th.golden': 'Altın Saat', 'th.twilight': 'Alacakaranlık', 'th.oceannight': 'Okyanus Gecesi',
   'logo.title': 'Klinik logosu', 'logo.upload': 'Logo yükle', 'logo.remove': 'Logoyu kaldır',
   'staff.also_doctor': 'Ben de doktorum',
 }

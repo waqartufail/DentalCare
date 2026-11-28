@@ -1,29 +1,31 @@
-// 10 themes: 7 light + 3 dark. Rang styles.css me [data-theme] se aate hain.
+// 12 themes: 10 light (gradient) + 2 narm dark. Rang styles.css me [data-theme] se aate hain.
+// colors: [primary-1, primary-2, page-tint-1, page-tint-2] (sirf preview ke liye)
 export const THEMES = [
-  { id: 'teal', key: 'th.teal', dark: false, colors: ['#f4f7f7', '#0f766e', '#ffffff'], bar: '#0f766e' },
-  { id: 'ocean', key: 'th.ocean', dark: false, colors: ['#f3f6fd', '#1d4ed8', '#ffffff'], bar: '#1d4ed8' },
-  { id: 'purple', key: 'th.purple', dark: false, colors: ['#f6f3fd', '#7c3aed', '#ffffff'], bar: '#7c3aed' },
-  { id: 'rose', key: 'th.rose', dark: false, colors: ['#fdf3f5', '#e11d48', '#ffffff'], bar: '#e11d48' },
-  { id: 'green', key: 'th.green', dark: false, colors: ['#f2f8f3', '#15803d', '#ffffff'], bar: '#15803d' },
-  { id: 'orange', key: 'th.orange', dark: false, colors: ['#fdf6f1', '#ea580c', '#ffffff'], bar: '#ea580c' },
-  { id: 'slate', key: 'th.slate', dark: false, colors: ['#f1f3f5', '#334155', '#ffffff'], bar: '#334155' },
-  { id: 'midnight', key: 'th.midnight', dark: true, colors: ['#0b1220', '#2dd4bf', '#121b2e'], bar: '#0b1220' },
-  { id: 'charcoal', key: 'th.charcoal', dark: true, colors: ['#1a1b1e', '#60a5fa', '#25262b'], bar: '#1a1b1e' },
-  { id: 'amoled', key: 'th.amoled', dark: true, colors: ['#000000', '#a78bfa', '#0d0d0d'], bar: '#000000' },
+  { id: 'mint', key: 'th.mint', dark: false, colors: ['#0f766e', '#0891b2', '#e6fbf6', '#e8f4fd'] },
+  { id: 'ocean', key: 'th.ocean', dark: false, colors: ['#1d4ed8', '#0284c7', '#e8f0ff', '#e3f6ff'] },
+  { id: 'lavender', key: 'th.lavender', dark: false, colors: ['#7c3aed', '#c026d3', '#f3eaff', '#fde8fb'] },
+  { id: 'rose', key: 'th.rose', dark: false, colors: ['#e11d48', '#ea580c', '#ffe9ee', '#fff0e3'] },
+  { id: 'meadow', key: 'th.meadow', dark: false, colors: ['#15803d', '#5a9e0a', '#e9f9ea', '#f4fbd9'] },
+  { id: 'sunset', key: 'th.sunset', dark: false, colors: ['#ea580c', '#db2777', '#fff1e0', '#ffe4ef'] },
+  { id: 'berry', key: 'th.berry', dark: false, colors: ['#be185d', '#6d28d9', '#ffe8f3', '#ece8ff'] },
+  { id: 'sky', key: 'th.sky', dark: false, colors: ['#0284c7', '#7c3aed', '#e4f4ff', '#efe8ff'] },
+  { id: 'emerald', key: 'th.emerald', dark: false, colors: ['#059669', '#0369a1', '#e3faf0', '#e2f1fb'] },
+  { id: 'golden', key: 'th.golden', dark: false, colors: ['#b45309', '#ca8a04', '#fff6dc', '#ffeccf'] },
+  { id: 'twilight', key: 'th.twilight', dark: true, colors: ['#8b5cf6', '#ec4899', '#2a2757', '#1f2a4d'] },
+  { id: 'oceannight', key: 'th.oceannight', dark: true, colors: ['#0891b2', '#2563eb', '#12344a', '#0f2438'] },
 ]
 
 const KEY = 'dc_theme'
 export const getTheme = () => {
-  try { const s = localStorage.getItem(KEY); if (s && THEMES.some((t) => t.id === s)) return s } catch { /* ignore */ }
-  try { if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'midnight' } catch { /* ignore */ }
-  return 'teal'
+  try { const s = localStorage.getItem(KEY); if (s && THEMES.some((x) => x.id === s)) return s } catch { /* ignore */ }
+  return 'mint'
 }
 
 export function applyTheme(id) {
-  const th = THEMES.find((t) => t.id === id) || THEMES[0]
+  const th = THEMES.find((x) => x.id === id) || THEMES[0]
   document.documentElement.dataset.theme = th.id
   const m = document.querySelector('meta[name="theme-color"]')
-  if (m) m.setAttribute('content', th.bar)
+  if (m) m.setAttribute('content', th.colors[0])
 }
 
 export function setTheme(id) {

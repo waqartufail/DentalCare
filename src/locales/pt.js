@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'Finalizar atendimento', 'b.book': 'Agendar consulta', 'b.register_patient': '+ Cadastrar',
   'h.clinic_profile': 'Perfil da clínica',
   'pref.title': 'Aparência e idioma', 'pref.theme': 'Tema', 'pref.language': 'Idioma', 'pref.light': 'Temas claros', 'pref.dark': 'Temas escuros',
-  'th.teal': 'Verde-azulado', 'th.ocean': 'Oceano', 'th.purple': 'Roxo', 'th.rose': 'Rosa', 'th.green': 'Verde', 'th.orange': 'Pôr do sol',
-  'th.slate': 'Ardósia', 'th.midnight': 'Meia-noite', 'th.charcoal': 'Carvão', 'th.amoled': 'Preto AMOLED',
+  'th.mint': 'Brisa de menta', 'th.ocean': 'Onda do oceano', 'th.lavender': 'Sonho de lavanda', 'th.rose': 'Pétala de rosa', 'th.meadow': 'Campo fresco', 'th.sunset': 'Brilho do pôr do sol', 'th.berry': 'Rubor de frutas', 'th.sky': 'Doce celeste', 'th.emerald': 'Mar esmeralda', 'th.golden': 'Hora dourada', 'th.twilight': 'Crepúsculo', 'th.oceannight': 'Noite oceânica',
   'logo.title': 'Logotipo da clínica', 'logo.upload': 'Enviar logotipo', 'logo.remove': 'Remover logotipo',
   'staff.also_doctor': 'Também sou dentista',
 }

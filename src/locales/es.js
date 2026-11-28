@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'Finalizar consulta', 'b.book': 'Reservar cita', 'b.register_patient': '+ Registrar',
   'h.clinic_profile': 'Perfil de la clínica',
   'pref.title': 'Apariencia e idioma', 'pref.theme': 'Tema', 'pref.language': 'Idioma', 'pref.light': 'Temas claros', 'pref.dark': 'Temas oscuros',
-  'th.teal': 'Verde azulado', 'th.ocean': 'Océano', 'th.purple': 'Morado', 'th.rose': 'Rosa', 'th.green': 'Verde', 'th.orange': 'Atardecer',
-  'th.slate': 'Pizarra', 'th.midnight': 'Medianoche', 'th.charcoal': 'Carbón', 'th.amoled': 'Negro AMOLED',
+  'th.mint': 'Brisa de menta', 'th.ocean': 'Ola oceánica', 'th.lavender': 'Sueño de lavanda', 'th.rose': 'Pétalo de rosa', 'th.meadow': 'Prado fresco', 'th.sunset': 'Resplandor del ocaso', 'th.berry': 'Rubor de bayas', 'th.sky': 'Caramelo celeste', 'th.emerald': 'Mar esmeralda', 'th.golden': 'Hora dorada', 'th.twilight': 'Crepúsculo', 'th.oceannight': 'Noche oceánica',
   'logo.title': 'Logo de la clínica', 'logo.upload': 'Subir logo', 'logo.remove': 'Quitar logo',
   'staff.also_doctor': 'También soy doctor',
 }

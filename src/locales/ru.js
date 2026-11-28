@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'Завершить приём', 'b.book': 'Записать на приём', 'b.register_patient': '+ Регистрация',
   'h.clinic_profile': 'Профиль клиники',
   'pref.title': 'Оформление и язык', 'pref.theme': 'Тема', 'pref.language': 'Язык', 'pref.light': 'Светлые темы', 'pref.dark': 'Тёмные темы',
-  'th.teal': 'Бирюзовая', 'th.ocean': 'Океан', 'th.purple': 'Фиолетовая', 'th.rose': 'Розовая', 'th.green': 'Зелёная', 'th.orange': 'Закат',
-  'th.slate': 'Сланец', 'th.midnight': 'Полночь', 'th.charcoal': 'Графит', 'th.amoled': 'AMOLED чёрная',
+  'th.mint': 'Мятный бриз', 'th.ocean': 'Океанская волна', 'th.lavender': 'Лавандовая мечта', 'th.rose': 'Лепесток розы', 'th.meadow': 'Свежий луг', 'th.sunset': 'Закатное сияние', 'th.berry': 'Ягодный румянец', 'th.sky': 'Небесная конфета', 'th.emerald': 'Изумрудное море', 'th.golden': 'Золотой час', 'th.twilight': 'Сумерки', 'th.oceannight': 'Океанская ночь',
   'logo.title': 'Логотип клиники', 'logo.upload': 'Загрузить логотип', 'logo.remove': 'Удалить логотип',
   'staff.also_doctor': 'Я также врач',
 }

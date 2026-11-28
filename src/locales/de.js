@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'Behandlung beenden', 'b.book': 'Termin buchen', 'b.register_patient': '+ Registrieren',
   'h.clinic_profile': 'Praxisprofil',
   'pref.title': 'Darstellung & Sprache', 'pref.theme': 'Design', 'pref.language': 'Sprache', 'pref.light': 'Helle Designs', 'pref.dark': 'Dunkle Designs',
-  'th.teal': 'Petrol', 'th.ocean': 'Ozean', 'th.purple': 'Violett', 'th.rose': 'Rosé', 'th.green': 'Grün', 'th.orange': 'Sonnenuntergang',
-  'th.slate': 'Schiefer', 'th.midnight': 'Mitternacht', 'th.charcoal': 'Anthrazit', 'th.amoled': 'AMOLED-Schwarz',
+  'th.mint': 'Minzbrise', 'th.ocean': 'Meereswelle', 'th.lavender': 'Lavendeltraum', 'th.rose': 'Rosenblatt', 'th.meadow': 'Frische Wiese', 'th.sunset': 'Abendglühen', 'th.berry': 'Beerenrot', 'th.sky': 'Himmelsbonbon', 'th.emerald': 'Smaragdmeer', 'th.golden': 'Goldene Stunde', 'th.twilight': 'Dämmerung', 'th.oceannight': 'Ozeannacht',
   'logo.title': 'Praxislogo', 'logo.upload': 'Logo hochladen', 'logo.remove': 'Logo entfernen',
   'staff.also_doctor': 'Ich bin auch Arzt',
 }

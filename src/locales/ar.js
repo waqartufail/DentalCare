@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'إنهاء الفحص', 'b.book': 'حجز موعد', 'b.register_patient': '+ تسجيل',
   'h.clinic_profile': 'ملف العيادة',
   'pref.title': 'المظهر واللغة', 'pref.theme': 'المظهر', 'pref.language': 'اللغة', 'pref.light': 'مظاهر فاتحة', 'pref.dark': 'مظاهر داكنة',
-  'th.teal': 'أخضر مزرق', 'th.ocean': 'محيط', 'th.purple': 'بنفسجي', 'th.rose': 'وردي', 'th.green': 'أخضر', 'th.orange': 'غروب',
-  'th.slate': 'رمادي أردوازي', 'th.midnight': 'منتصف الليل', 'th.charcoal': 'فحمي', 'th.amoled': 'أسود AMOLED',
+  'th.mint': 'نسيم النعناع', 'th.ocean': 'موجة المحيط', 'th.lavender': 'حلم اللافندر', 'th.rose': 'بتلة الورد', 'th.meadow': 'المرج الأخضر', 'th.sunset': 'وهج الغروب', 'th.berry': 'خجل التوت', 'th.sky': 'حلوى السماء', 'th.emerald': 'البحر الزمردي', 'th.golden': 'الساعة الذهبية', 'th.twilight': 'الغسق', 'th.oceannight': 'ليل المحيط',
   'logo.title': 'شعار العيادة', 'logo.upload': 'رفع الشعار', 'logo.remove': 'إزالة الشعار',
   'staff.also_doctor': 'أنا أيضًا طبيب',
 }

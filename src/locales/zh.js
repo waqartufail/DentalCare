@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': '结束就诊', 'b.book': '预约', 'b.register_patient': '+ 登记',
   'h.clinic_profile': '诊所资料',
   'pref.title': '外观与语言', 'pref.theme': '主题', 'pref.language': '语言', 'pref.light': '浅色主题', 'pref.dark': '深色主题',
-  'th.teal': '青绿', 'th.ocean': '海洋蓝', 'th.purple': '紫色', 'th.rose': '玫瑰', 'th.green': '绿色', 'th.orange': '日落橙',
-  'th.slate': '石板灰', 'th.midnight': '午夜', 'th.charcoal': '炭灰', 'th.amoled': 'AMOLED 纯黑',
+  'th.mint': '薄荷微风', 'th.ocean': '海洋波浪', 'th.lavender': '薰衣草之梦', 'th.rose': '玫瑰花瓣', 'th.meadow': '清新草地', 'th.sunset': '日落余晖', 'th.berry': '浆果红晕', 'th.sky': '天空糖果', 'th.emerald': '翡翠之海', 'th.golden': '黄金时刻', 'th.twilight': '暮光', 'th.oceannight': '海洋之夜',
   'logo.title': '诊所标志', 'logo.upload': '上传标志', 'logo.remove': '移除标志',
   'staff.also_doctor': '我同时也是医生',
 }

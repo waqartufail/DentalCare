@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'Selesaikan konsultasi', 'b.book': 'Buat janji', 'b.register_patient': '+ Daftar',
   'h.clinic_profile': 'Profil klinik',
   'pref.title': 'Tampilan & bahasa', 'pref.theme': 'Tema', 'pref.language': 'Bahasa', 'pref.light': 'Tema terang', 'pref.dark': 'Tema gelap',
-  'th.teal': 'Teal', 'th.ocean': 'Samudra', 'th.purple': 'Ungu', 'th.rose': 'Mawar', 'th.green': 'Hijau', 'th.orange': 'Senja',
-  'th.slate': 'Batu tulis', 'th.midnight': 'Tengah malam', 'th.charcoal': 'Arang', 'th.amoled': 'Hitam AMOLED',
+  'th.mint': 'Embun Mint', 'th.ocean': 'Ombak Samudra', 'th.lavender': 'Mimpi Lavender', 'th.rose': 'Kelopak Mawar', 'th.meadow': 'Padang Segar', 'th.sunset': 'Cahaya Senja', 'th.berry': 'Semu Beri', 'th.sky': 'Permen Langit', 'th.emerald': 'Laut Zamrud', 'th.golden': 'Jam Keemasan', 'th.twilight': 'Senja Ungu', 'th.oceannight': 'Malam Samudra',
   'logo.title': 'Logo klinik', 'logo.upload': 'Unggah logo', 'logo.remove': 'Hapus logo',
   'staff.also_doctor': 'Saya juga dokter',
 }

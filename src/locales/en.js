@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': 'Finish consult', 'b.book': 'Book appointment', 'b.register_patient': '+ Register',
   'h.clinic_profile': 'Clinic profile',
   'pref.title': 'Appearance & language', 'pref.theme': 'Theme', 'pref.language': 'Language', 'pref.light': 'Light themes', 'pref.dark': 'Dark themes',
-  'th.teal': 'Teal', 'th.ocean': 'Ocean', 'th.purple': 'Purple', 'th.rose': 'Rose', 'th.green': 'Green', 'th.orange': 'Sunset',
-  'th.slate': 'Slate', 'th.midnight': 'Midnight', 'th.charcoal': 'Charcoal', 'th.amoled': 'AMOLED Black',
+  'th.mint': 'Mint Breeze', 'th.ocean': 'Ocean Wave', 'th.lavender': 'Lavender Dream', 'th.rose': 'Rose Petal', 'th.meadow': 'Fresh Meadow', 'th.sunset': 'Sunset Glow', 'th.berry': 'Berry Blush', 'th.sky': 'Sky Candy', 'th.emerald': 'Emerald Sea', 'th.golden': 'Golden Hour', 'th.twilight': 'Twilight', 'th.oceannight': 'Ocean Night',
   'logo.title': 'Clinic logo', 'logo.upload': 'Upload logo', 'logo.remove': 'Remove logo',
   'staff.also_doctor': 'I am also a Doctor',
 }

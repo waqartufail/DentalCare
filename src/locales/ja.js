@@ -30,8 +30,7 @@ export default {
   'b.finish_consult': '診察終了', 'b.book': '予約する', 'b.register_patient': '+ 登録',
   'h.clinic_profile': 'クリニック情報',
   'pref.title': '外観と言語', 'pref.theme': 'テーマ', 'pref.language': '言語', 'pref.light': 'ライトテーマ', 'pref.dark': 'ダークテーマ',
-  'th.teal': 'ティール', 'th.ocean': 'オーシャン', 'th.purple': 'パープル', 'th.rose': 'ローズ', 'th.green': 'グリーン', 'th.orange': 'サンセット',
-  'th.slate': 'スレート', 'th.midnight': 'ミッドナイト', 'th.charcoal': 'チャコール', 'th.amoled': 'AMOLEDブラック',
+  'th.mint': 'ミントブリーズ', 'th.ocean': 'オーシャンウェーブ', 'th.lavender': 'ラベンダードリーム', 'th.rose': 'ローズペタル', 'th.meadow': 'フレッシュメドウ', 'th.sunset': 'サンセットグロウ', 'th.berry': 'ベリーブラッシュ', 'th.sky': 'スカイキャンディ', 'th.emerald': 'エメラルドシー', 'th.golden': 'ゴールデンアワー', 'th.twilight': 'トワイライト', 'th.oceannight': 'オーシャンナイト',
   'logo.title': 'クリニックのロゴ', 'logo.upload': 'ロゴをアップロード', 'logo.remove': 'ロゴを削除',
   'staff.also_doctor': '私も医師です',
 }

@@ -10,7 +10,7 @@ export function PrefsModal({ close }) {
     <div className="themes">
       {THEMES.filter((x) => x.dark === dark).map((x) => (
         <button key={x.id} type="button" className={'theme-opt' + (theme === x.id ? ' on' : '')} onClick={() => pick(x.id)}>
-          <div className="sw">{x.colors.map((c, i) => <i key={i} style={{ background: c }} />)}</div>
+          <div className="sw"><i style={{ flex: 2, background: `linear-gradient(135deg, ${x.colors[0]}, ${x.colors[1]})` }} /><i style={{ flex: 1, background: `linear-gradient(160deg, ${x.colors[2]}, ${x.colors[3]})` }} /></div>
           {t(x.key)}
         </button>
       ))}

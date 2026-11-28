@@ -31,8 +31,7 @@ export default {
   'b.finish_consult': 'Consult mukammal', 'b.book': 'Appointment book karein', 'b.register_patient': '+ Register',
   'h.clinic_profile': 'Clinic profile',
   'pref.title': 'Theme aur zabaan', 'pref.theme': 'Theme', 'pref.language': 'Zabaan', 'pref.light': 'Light themes', 'pref.dark': 'Dark themes',
-  'th.teal': 'Teal', 'th.ocean': 'Ocean', 'th.purple': 'Purple', 'th.rose': 'Rose', 'th.green': 'Green', 'th.orange': 'Sunset',
-  'th.slate': 'Slate', 'th.midnight': 'Midnight', 'th.charcoal': 'Charcoal', 'th.amoled': 'AMOLED Black',
+  'th.mint': 'Mint Breeze', 'th.ocean': 'Ocean Wave', 'th.lavender': 'Lavender Dream', 'th.rose': 'Rose Petal', 'th.meadow': 'Fresh Meadow', 'th.sunset': 'Sunset Glow', 'th.berry': 'Berry Blush', 'th.sky': 'Sky Candy', 'th.emerald': 'Emerald Sea', 'th.golden': 'Golden Hour', 'th.twilight': 'Twilight', 'th.oceannight': 'Ocean Night',
   'logo.title': 'Clinic ka logo', 'logo.upload': 'Logo upload karein', 'logo.remove': 'Logo hatayein',
   'staff.also_doctor': 'Main khud bhi Doctor hoon',
 }
