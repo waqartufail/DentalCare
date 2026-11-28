@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Nane Esintisi', 'th.ocean': 'Okyanus Dalgası', 'th.lavender': 'Lavanta Rüyası', 'th.rose': 'Gül Yaprağı', 'th.meadow': 'Taze Çayır', 'th.sunset': 'Gün Batımı Parıltısı', 'th.berry': 'Orman Meyvesi', 'th.sky': 'Gökyüzü Şekeri', 'th.emerald': 'Zümrüt Deniz', 'th.golden': 'Altın Saat', 'th.twilight': 'Alacakaranlık', 'th.oceannight': 'Okyanus Gecesi',
   'logo.title': 'Klinik logosu', 'logo.upload': 'Logo yükle', 'logo.remove': 'Logoyu kaldır',
   'staff.also_doctor': 'Ben de doktorum',
+  'cat.manage': 'Kategoriler', 'cat.none': 'Kategorisiz', 'cat.label': 'Kategori',
 }

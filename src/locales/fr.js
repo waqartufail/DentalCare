@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Brise de menthe', 'th.ocean': 'Vague océane', 'th.lavender': 'Rêve de lavande', 'th.rose': 'Pétale de rose', 'th.meadow': 'Prairie fraîche', 'th.sunset': 'Lueur du couchant', 'th.berry': 'Rouge baie', 'th.sky': 'Bonbon ciel', 'th.emerald': "Mer d'émeraude", 'th.golden': 'Heure dorée', 'th.twilight': 'Crépuscule', 'th.oceannight': 'Nuit océane',
   'logo.title': 'Logo du cabinet', 'logo.upload': 'Téléverser le logo', 'logo.remove': 'Retirer le logo',
   'staff.also_doctor': 'Je suis aussi médecin',
+  'cat.manage': 'Catégories', 'cat.none': 'Sans catégorie', 'cat.label': 'Catégorie',
 }

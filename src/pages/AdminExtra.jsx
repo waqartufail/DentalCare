@@ -11,23 +11,30 @@ export function Overview({ expenses }) {
   const [month, setMonth] = useState(isoDate().slice(0, 7))
   const [pay, setPay] = useState(null)
   const [sal, setSal] = useState(null)
+  const [bill, setBill] = useState(null)
 
   useEffect(() => {
-    setPay(null); setSal(null)
+    setPay(null); setSal(null); setBill(null)
     const [y, m] = month.split('-').map(Number)
     const from = new Date(y, m - 1, 1).toISOString()
     const to = new Date(y, m, 1).toISOString()
     supabase.from('patient_payments').select('amount, method, received_at').gte('received_at', from).lt('received_at', to).then(({ data }) => setPay(data || []))
     supabase.from('payroll_payments').select('total, paid_at').gte('paid_at', from).lt('paid_at', to).then(({ data }) => setSal(data || []))
+    supabase.from('appointment_treatments').select('fee, category_name, appointments!inner(status, start_at)')
+      .gte('appointments.start_at', from).lt('appointments.start_at', to).not('appointments.status', 'in', '(cancelled,no_show)')
+      .then(({ data }) => setBill(data || []))
   }, [month])
 
-  if (!pay || !sal) return (<><div className="card"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} /></div><div className="spinner" /></>)
+  if (!pay || !sal || !bill) return (<><div className="card"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} /></div><div className="spinner" /></>)
 
   const income = pay.reduce((a, p) => a + Number(p.amount), 0)
   const exp = expenses.filter((x) => x.expense_date.startsWith(month)).reduce((a, x) => a + Number(x.amount), 0)
   const salaries = sal.reduce((a, p) => a + Number(p.total), 0)
   const out = exp + salaries
   const net = income - out
+  const byCat = {}
+  bill.forEach((x) => { const k = x.category_name || T('cat.none'); byCat[k] = (byCat[k] || 0) + Number(x.fee) })
+  const billTotal = Object.values(byCat).reduce((a, v) => a + v, 0)
   const byMethod = {}
   pay.forEach((p) => { const k = p.method || 'Other'; byMethod[k] = (byMethod[k] || 0) + Number(p.amount) })
 
@@ -46,6 +53,16 @@ export function Overview({ expenses }) {
         <h3>Outgoing detail</h3>
         <div className="row"><span>Expenses</span><b>{money(exp)}</b></div>
         <div className="row"><span>Salaries (payroll paid)</span><b>{money(salaries)}</b></div>
+      </div>
+      <div className="card">
+        <h3>Category wise billing (treatments)</h3>
+        {Object.keys(byCat).length === 0 ? <p className="muted">Is mahine koi treatment bill nahi hui.</p> :
+          Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
+            <div key={k} style={{ marginBottom: '.6rem' }}>
+              <div className="row" style={{ padding: 0 }}><span>{k}</span><b>{money(v)}</b></div>
+              <div className="bar"><i style={{ width: `${(v / billTotal) * 100}%` }} /></div>
+            </div>
+          ))}
       </div>
       <div className="card">
         <h3>Income by method</h3>

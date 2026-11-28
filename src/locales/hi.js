@@ -34,4 +34,5 @@ export default {
   'th.mint': 'Mint Breeze', 'th.ocean': 'Ocean Wave', 'th.lavender': 'Lavender Dream', 'th.rose': 'Rose Petal', 'th.meadow': 'Fresh Meadow', 'th.sunset': 'Sunset Glow', 'th.berry': 'Berry Blush', 'th.sky': 'Sky Candy', 'th.emerald': 'Emerald Sea', 'th.golden': 'Golden Hour', 'th.twilight': 'Twilight', 'th.oceannight': 'Ocean Night',
   'logo.title': 'Clinic ka logo', 'logo.upload': 'Logo upload karein', 'logo.remove': 'Logo hatayein',
   'staff.also_doctor': 'Main khud bhi Doctor hoon',
+  'cat.manage': 'Categories', 'cat.none': 'Bina category', 'cat.label': 'Category',
 }

@@ -132,3 +132,6 @@ textarea{width:100%;padding:.65rem .75rem;border:1px solid var(--line);border-ra
 .tabbar button.on .ico{background:var(--grad);color:var(--on-primary);border-radius:99px;padding:0 .9rem}
 .topbar h2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .spinner{border-top-color:var(--teal)}
+.cat-h{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--teal);padding:.5rem 0 .15rem}
+.cat-block{margin-bottom:.4rem}
+.cat-title{display:flex;align-items:center;justify-content:space-between;margin:.9rem 0 .4rem;font-weight:800}

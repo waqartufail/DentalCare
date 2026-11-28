@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Embun Mint', 'th.ocean': 'Ombak Samudra', 'th.lavender': 'Mimpi Lavender', 'th.rose': 'Kelopak Mawar', 'th.meadow': 'Padang Segar', 'th.sunset': 'Cahaya Senja', 'th.berry': 'Semu Beri', 'th.sky': 'Permen Langit', 'th.emerald': 'Laut Zamrud', 'th.golden': 'Jam Keemasan', 'th.twilight': 'Senja Ungu', 'th.oceannight': 'Malam Samudra',
   'logo.title': 'Logo klinik', 'logo.upload': 'Unggah logo', 'logo.remove': 'Hapus logo',
   'staff.also_doctor': 'Saya juga dokter',
+  'cat.manage': 'Kategori', 'cat.none': 'Tanpa kategori', 'cat.label': 'Kategori',
 }

@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Minzbrise', 'th.ocean': 'Meereswelle', 'th.lavender': 'Lavendeltraum', 'th.rose': 'Rosenblatt', 'th.meadow': 'Frische Wiese', 'th.sunset': 'Abendglühen', 'th.berry': 'Beerenrot', 'th.sky': 'Himmelsbonbon', 'th.emerald': 'Smaragdmeer', 'th.golden': 'Goldene Stunde', 'th.twilight': 'Dämmerung', 'th.oceannight': 'Ozeannacht',
   'logo.title': 'Praxislogo', 'logo.upload': 'Logo hochladen', 'logo.remove': 'Logo entfernen',
   'staff.also_doctor': 'Ich bin auch Arzt',
+  'cat.manage': 'Kategorien', 'cat.none': 'Ohne Kategorie', 'cat.label': 'Kategorie',
 }

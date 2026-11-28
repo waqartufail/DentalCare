@@ -5,9 +5,9 @@ import Attendance from '../components/Attendance'
 import { DoctorPanel } from './Doctor'
 import { ClinicHead, SideBrand } from '../components/ClinicBrand'
 import { PrefsButton } from '../components/Prefs'
-import { t } from '../i18n'
+import { groupTreatments } from '../components/TreatmentPicker'
+import { t, t as T } from '../i18n'
 import { Overview, Payroll, StaffAttendance, Settings } from './AdminExtra'
-import { t as T } from '../i18n'
 
 const BASE_TABS = [
   ['dashboard', '📊', 'tab.dashboard'],
@@ -32,6 +32,7 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
   const [tab, setTab] = useState('dashboard')
   const [docView, setDocView] = useState('queue')
   const [treatments, setTreatments] = useState([])
+  const [categories, setCategories] = useState([])
   const [employees, setEmployees] = useState([])
   const [expenses, setExpenses] = useState([])
   const [plans, setPlans] = useState([])
@@ -44,15 +45,16 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
   }
 
   const load = useCallback(async () => {
-    const [t, e, x, p] = await Promise.all([
+    const [t, e, x, p, cg] = await Promise.all([
       supabase.from('treatments').select('*').order('name'),
       supabase.from('employees').select('*').order('created_at', { ascending: false }),
       supabase.from('expenses').select('*').order('expense_date', { ascending: false }).order('created_at', { ascending: false }),
       supabase.from('plans').select('*'),
+      supabase.from('treatment_categories').select('*').order('sort_order').order('name'),
     ])
     const error = t.error || e.error || x.error
     if (error) notify(error.message, true)
-    setTreatments(t.data || []); setEmployees(e.data || []); setExpenses(x.data || []); setPlans(p.data || [])
+    setTreatments(t.data || []); setEmployees(e.data || []); setExpenses(x.data || []); setPlans(p.data || []); setCategories(cg.data || [])
     setLoading(false)
   }, [])
   useEffect(() => { load() }, [load])
@@ -72,7 +74,7 @@ export default function Admin({ profile, clinic, onLogout, onClinicChanged }) {
 
   const isDoc = employees.some((e) => e.user_id === profile.id && e.role === 'doctor' && e.is_active)
   const tabs = isDoc ? [BASE_TABS[0], DOCTOR_TAB, ...BASE_TABS.slice(1)] : BASE_TABS
-  const ctx = { clinic, treatments, employees, expenses, plans, act, notify, load, isDoc, userId: profile.id }
+  const ctx = { clinic, treatments, categories, employees, expenses, plans, act, notify, load, isDoc, userId: profile.id }
 
   return (
     <div className="shell">
@@ -203,53 +205,146 @@ function ClinicEdit({ clinic, close, onSaved, notify }) {
   )
 }
 
-/* ------------------------------ Treatments ------------------------------ */
-function Treatments({ clinic, treatments, act, notify }) {
+/* ------------------------------ Treatments (Main Category -> Treatments) ------------------------------ */
+function Treatments({ clinic, treatments, categories, act, notify }) {
   const [q, setQ] = useState('')
   const [form, setForm] = useState(null)
-  const rows = treatments.filter((t) => !q || t.name.toLowerCase().includes(q.toLowerCase()))
+  const [catOpen, setCatOpen] = useState(false)
+  const rows = treatments.filter((x) => !q || x.name.toLowerCase().includes(q.toLowerCase()))
+  const groups = groupTreatments(rows, categories)
+  // khali categories bhi dikhayein taake Admin unme treatment jor sake
+  const emptyCats = q ? [] : categories.filter((c) => !groups.some((g) => g.id === c.id))
 
   async function save(e) {
     e.preventDefault()
-    const row = { name: form.name.trim(), fee: Number(form.fee), is_active: form.is_active, needs_lab: !!form.needs_lab }
+    const row = { name: form.name.trim(), fee: Number(form.fee), is_active: form.is_active, needs_lab: !!form.needs_lab, category_id: form.category_id || null }
     if (!row.name || isNaN(row.fee) || row.fee < 0) return notify('Name aur fee sahi likhein', true)
     const ok = await act(() => form.id ? supabase.from('treatments').update(row).eq('id', form.id) : supabase.from('treatments').insert({ ...row, clinic_id: clinic.id }), 'Treatment saved')
     if (ok) setForm(null)
   }
 
+  const blank = (cat) => ({ id: null, name: '', fee: '', is_active: true, needs_lab: false, category_id: cat || '' })
+
+  const card = (x) => (
+    <div className="card" key={x.id}>
+      <div className="row">
+        <div><b>{x.name}</b> {x.needs_lab && <span className="pill blue">Lab</span>} {!x.is_active && <span className="pill gray">inactive</span>}</div>
+        <div className="big small-big">{money(x.fee)}</div>
+      </div>
+      <div className="actions">
+        <button className="btn small" onClick={() => setForm({ ...x, fee: String(x.fee), category_id: x.category_id || '' })}>{T('c.edit')}</button>
+        <button className="btn small" onClick={() => act(() => supabase.from('treatments').update({ is_active: !x.is_active }).eq('id', x.id), x.is_active ? 'Treatment inactive' : 'Treatment active')}>{x.is_active ? T('c.deactivate') : T('c.activate')}</button>
+        <button className="btn small danger" onClick={() => { if (confirm(`Delete "${x.name}"?`)) act(() => supabase.from('treatments').delete().eq('id', x.id), 'Deleted') }}>{T('c.delete')}</button>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <div className="card inline">
-        <input placeholder="Search treatment" value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="btn primary" style={{ whiteSpace: 'nowrap' }} onClick={() => setForm({ id: null, name: '', fee: '', is_active: true, needs_lab: false })}>+ Add</button>
+        <input placeholder={T('c.search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <button className="btn" style={{ whiteSpace: 'nowrap' }} onClick={() => setCatOpen(true)}>{T('cat.manage')}</button>
+        <button className="btn primary" style={{ whiteSpace: 'nowrap' }} onClick={() => setForm(blank(''))}>+ {T('c.add')}</button>
       </div>
-      {rows.length === 0 && <div className="card muted">Abhi koi treatment nahi. “+ Add” se shuru karein (jaise Scaling, Filling, Root Canal).</div>}
-      {rows.map((t) => (
-        <div className="card" key={t.id}>
-          <div className="row">
-            <div><b>{t.name}</b> {t.needs_lab && <span className="pill blue">Lab</span>} {!t.is_active && <span className="pill gray">inactive</span>}</div>
-            <div className="big small-big">{money(t.fee)}</div>
-          </div>
-          <div className="actions">
-            <button className="btn small" onClick={() => setForm({ ...t, fee: String(t.fee) })}>{T('c.edit')}</button>
-            <button className="btn small" onClick={() => act(() => supabase.from('treatments').update({ is_active: !t.is_active }).eq('id', t.id), t.is_active ? 'Treatment inactive' : 'Treatment active')}>{t.is_active ? T('c.deactivate') : T('c.activate')}</button>
-            <button className="btn small danger" onClick={() => { if (confirm(`Delete "${t.name}"?`)) act(() => supabase.from('treatments').delete().eq('id', t.id), 'Deleted') }}>{T('c.delete')}</button>
-          </div>
+      <div className="card muted">Har clinic ki apni categories, treatments aur fee hoti hai. Pehle Main Category (jaise Orthodontics) banayein, phir us ke andar treatments (Braces, Retainer...).</div>
+      {treatments.length === 0 && categories.length === 0 && <div className="card muted">Abhi kuch nahi. “{T('cat.manage')}” se categories banayein, phir “+ {T('c.add')}” se treatments jorein.</div>}
+      {groups.map((g) => (
+        <div className="cat-block" key={g.id}>
+          <div className="cat-title"><span>{categories.length > 0 ? g.name : ''} <span className="muted">({g.items.length})</span></span>
+            {g.id !== 'none' && <button className="btn small" onClick={() => setForm(blank(g.id))}>+ {T('c.add')}</button>}</div>
+          {g.items.map(card)}
         </div>
       ))}
+      {emptyCats.map((c) => (
+        <div className="cat-block" key={c.id}>
+          <div className="cat-title"><span>{c.name} <span className="muted">(0)</span></span><button className="btn small" onClick={() => setForm(blank(c.id))}>+ {T('c.add')}</button></div>
+        </div>
+      ))}
+
       {form && (
         <div className="modal" onClick={() => setForm(null)}>
           <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
             <h3>{form.id ? 'Edit treatment' : 'New treatment'}</h3>
-            <label>Treatment name<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required autoFocus /></label>
-            <label>Fee<input type="number" min="0" value={form.fee} onChange={(e) => setForm({ ...form, fee: e.target.value })} required inputMode="decimal" /></label>
-            <label className="check"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> Active</label>
+            <label>{T('cat.label')}
+              <select value={form.category_id || ''} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
+                <option value="">{T('cat.none')}</option>
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </label>
+            <label>{T('f.treatment')}<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required autoFocus /></label>
+            <label>{T('f.fee')}<input type="number" min="0" value={form.fee} onChange={(e) => setForm({ ...form, fee: e.target.value })} required inputMode="decimal" /></label>
+            <label className="check"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> {T('st.active')}</label>
             <label className="check"><input type="checkbox" checked={!!form.needs_lab} onChange={(e) => setForm({ ...form, needs_lab: e.target.checked })} /> Is treatment me Lab ka kaam hai (braces, dentures, crown...)</label>
             <div className="actions"><button className="btn primary">{T('c.save')}</button><button type="button" className="btn" onClick={() => setForm(null)}>{T('c.cancel')}</button></div>
           </form>
         </div>
       )}
+      {catOpen && <CategoriesModal clinic={clinic} categories={categories} treatments={treatments} act={act} notify={notify} close={() => setCatOpen(false)} />}
     </>
+  )
+}
+
+function CategoriesModal({ clinic, categories, treatments, act, notify, close }) {
+  const [name, setName] = useState('')
+  const [edit, setEdit] = useState(null) // {id, name}
+
+  async function add(e) {
+    e.preventDefault()
+    const n = name.trim()
+    if (!n) return
+    const next = categories.reduce((m, c) => Math.max(m, c.sort_order), 0) + 1
+    const ok = await act(() => supabase.from('treatment_categories').insert({ clinic_id: clinic.id, name: n, sort_order: next }), 'Category add ho gayi')
+    if (ok) setName('')
+  }
+  async function rename() {
+    if (!edit?.name.trim()) return
+    const ok = await act(() => supabase.from('treatment_categories').update({ name: edit.name.trim() }).eq('id', edit.id), 'Naam badal diya')
+    if (ok) setEdit(null)
+  }
+  async function move(i, d) {
+    const a = categories[i], b = categories[i + d]
+    if (!a || !b) return
+    // dono ka sort_order badal dein (barabar ho to alag kar dein)
+    const ao = a.sort_order, bo = b.sort_order === a.sort_order ? a.sort_order + d : b.sort_order
+    await act(() => supabase.from('treatment_categories').update({ sort_order: bo }).eq('id', a.id))
+    await act(() => supabase.from('treatment_categories').update({ sort_order: ao }).eq('id', b.id))
+  }
+
+  return (
+    <div className="modal" onClick={close}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="row"><h3 style={{ margin: 0 }}>{T('cat.manage')}</h3><button className="btn small" onClick={close}>{T('c.close')}</button></div>
+        <form className="inline" style={{ marginTop: '.6rem' }} onSubmit={add}>
+          <input placeholder="jaise Orthodontics, Restorative, Surgery" value={name} onChange={(e) => setName(e.target.value)} />
+          <button className="btn primary" style={{ whiteSpace: 'nowrap' }}>+ {T('c.add')}</button>
+        </form>
+        {categories.length === 0 && <p className="muted">Abhi koi category nahi.</p>}
+        {categories.map((c, i) => {
+          const n = treatments.filter((x) => x.category_id === c.id).length
+          return (
+            <div className="row" key={c.id} style={{ alignItems: 'center' }}>
+              {edit?.id === c.id ? (
+                <input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} autoFocus />
+              ) : (
+                <div><b>{c.name}</b> <span className="muted">({n})</span></div>
+              )}
+              <div style={{ display: 'flex', gap: '.3rem', flexShrink: 0 }}>
+                {edit?.id === c.id ? (
+                  <><button className="btn small primary" onClick={rename}>{T('c.save')}</button><button className="btn small" onClick={() => setEdit(null)}>{T('c.cancel')}</button></>
+                ) : (
+                  <>
+                    <button className="btn small" disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
+                    <button className="btn small" disabled={i === categories.length - 1} onClick={() => move(i, 1)}>↓</button>
+                    <button className="btn small" onClick={() => setEdit({ id: c.id, name: c.name })}>{T('c.edit')}</button>
+                    <button className="btn small danger" onClick={() => { if (confirm(`"${c.name}" delete karein? Is ki ${n} treatments "${T('cat.none')}" me chali jayengi.`)) act(() => supabase.from('treatment_categories').delete().eq('id', c.id), 'Category delete ho gayi') }}>{T('c.delete')}</button>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 

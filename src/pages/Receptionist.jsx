@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabase'
 import Shell from '../components/Shell'
 import Attendance from '../components/Attendance'
+import TreatmentPicker from '../components/TreatmentPicker'
 import { useToast, isoDate, addDays, dayStart, fmtTime, fmtDT, waLink, STATUS, KIND, ACTIVE, apptTotal, apptPaid } from '../lib'
 import { fmtDate, money } from '../util'
 import { t as T } from '../i18n'
@@ -14,6 +15,7 @@ export default function Receptionist({ profile, clinic, onLogout }) {
   const [patients, setPatients] = useState([])
   const [doctors, setDoctors] = useState([])
   const [treatments, setTreatments] = useState([])
+  const [categories, setCategories] = useState([])
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(null) // {type, ...}
@@ -22,16 +24,17 @@ export default function Receptionist({ profile, clinic, onLogout }) {
   const load = useCallback(async () => {
     const from = dayStart(addDays(isoDate(), -30)).toISOString()
     const to = dayStart(addDays(isoDate(), 61)).toISOString()
-    const [a, p, d, t, m] = await Promise.all([
+    const [a, p, d, t, m, cg] = await Promise.all([
       supabase.from('appointments').select('*, patients(full_name, phone, patient_no), appointment_treatments(*), patient_payments(*)').gte('start_at', from).lt('start_at', to).order('start_at'),
       supabase.from('patients').select('*').order('created_at', { ascending: false }).limit(3000),
       supabase.rpc('list_doctors'),
       supabase.from('treatments').select('*').eq('is_active', true).order('name'),
       supabase.from('message_queue').select('*, patients(full_name)').eq('status', 'pending').order('created_at'),
+      supabase.from('treatment_categories').select('*').order('sort_order').order('name'),
     ])
     const err = a.error || p.error || d.error || t.error || m.error
     if (err) notify(err.message, true)
-    setAppts(a.data || []); setPatients(p.data || []); setDoctors(d.data || []); setTreatments(t.data || []); setMessages(m.data || [])
+    setAppts(a.data || []); setPatients(p.data || []); setDoctors(d.data || []); setTreatments(t.data || []); setMessages(m.data || []); setCategories(cg.data || [])
     setLoading(false)
   }, [])
 
@@ -55,7 +58,7 @@ export default function Receptionist({ profile, clinic, onLogout }) {
     return true
   }
 
-  const ctx = { clinic, appts, patients, doctors, docName, treatments, messages, act, notify, load, setModal }
+  const ctx = { clinic, appts, patients, doctors, docName, treatments, categories, messages, act, notify, load, setModal }
   const current = modal?.appt ? appts.find((x) => x.id === modal.appt) : null
 
   return (
@@ -275,7 +278,7 @@ function SlotPicker({ doctorId, minutes, value, onChange }) {
 }
 
 /* ============================== BOOK ============================== */
-function BookModal({ clinic, patients, doctors, treatments, prePatient, act, notify, load, close, setModal }) {
+function BookModal({ clinic, patients, doctors, treatments, categories, prePatient, act, notify, load, close, setModal }) {
   const [patient, setPatient] = useState(prePatient || null)
   const [q, setQ] = useState('')
   const [newP, setNewP] = useState(false)
@@ -330,9 +333,7 @@ function BookModal({ clinic, patients, doctors, treatments, prePatient, act, not
         <h4>3. Treatment (agar patient ko pata ho)</h4>
         <p className="muted">Pata na ho to khali chhor dein, Doctor khud select karega.</p>
         <button type="button" className="btn small" onClick={() => setShowT(!showT)}>{showT ? 'Hide' : 'Treatments dikhayein'} ({pick.length})</button>
-        {showT && <div className="picklist">{treatments.map((t) => (
-          <label key={t.id} className="check pick"><input type="checkbox" checked={pick.includes(t.id)} onChange={() => toggle(t.id)} /><span>{t.name}</span><span className="muted">{money(t.fee)}</span></label>
-        ))}</div>}
+        {showT && <TreatmentPicker treatments={treatments} categories={categories} pick={pick} toggle={toggle} />}
 
         <div className="actions"><button className="btn primary" disabled={busy || !patient || !start} onClick={book}>{busy ? 'Booking…' : start ? `Book ${fmtDT(start)}` : 'Book appointment'}</button></div>
       </div>
@@ -341,7 +342,7 @@ function BookModal({ clinic, patients, doctors, treatments, prePatient, act, not
 }
 
 /* ============================== LINES (treatments on appointment) ============================== */
-function LinesModal({ appt: a, treatments, clinic, act, close }) {
+function LinesModal({ appt: a, treatments, categories, clinic, act, close }) {
   const [pick, setPick] = useState([])
   const toggle = (id) => setPick(pick.includes(id) ? pick.filter((x) => x !== id) : [...pick, id])
   const lines = a.appointment_treatments || []
@@ -360,9 +361,7 @@ function LinesModal({ appt: a, treatments, clinic, act, close }) {
         ))}
         <div className="row"><b>Total</b><b>{money(apptTotal(a))}</b></div>
         <h4>Add</h4>
-        <div className="picklist">{treatments.map((t) => (
-          <label key={t.id} className="check pick"><input type="checkbox" checked={pick.includes(t.id)} onChange={() => toggle(t.id)} /><span>{t.name}</span><span className="muted">{money(t.fee)}</span></label>
-        ))}</div>
+        <TreatmentPicker treatments={treatments} categories={categories} pick={pick} toggle={toggle} />
         <button className="btn primary" disabled={pick.length === 0} onClick={add}>Add selected ({pick.length})</button>
       </div>
     </div>

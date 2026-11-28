@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Mint Breeze', 'th.ocean': 'Ocean Wave', 'th.lavender': 'Lavender Dream', 'th.rose': 'Rose Petal', 'th.meadow': 'Fresh Meadow', 'th.sunset': 'Sunset Glow', 'th.berry': 'Berry Blush', 'th.sky': 'Sky Candy', 'th.emerald': 'Emerald Sea', 'th.golden': 'Golden Hour', 'th.twilight': 'Twilight', 'th.oceannight': 'Ocean Night',
   'logo.title': 'Clinic logo', 'logo.upload': 'Upload logo', 'logo.remove': 'Remove logo',
   'staff.also_doctor': 'I am also a Doctor',
+  'cat.manage': 'Categories', 'cat.none': 'Uncategorized', 'cat.label': 'Category',
 }

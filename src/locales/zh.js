@@ -33,4 +33,5 @@ export default {
   'th.mint': '薄荷微风', 'th.ocean': '海洋波浪', 'th.lavender': '薰衣草之梦', 'th.rose': '玫瑰花瓣', 'th.meadow': '清新草地', 'th.sunset': '日落余晖', 'th.berry': '浆果红晕', 'th.sky': '天空糖果', 'th.emerald': '翡翠之海', 'th.golden': '黄金时刻', 'th.twilight': '暮光', 'th.oceannight': '海洋之夜',
   'logo.title': '诊所标志', 'logo.upload': '上传标志', 'logo.remove': '移除标志',
   'staff.also_doctor': '我同时也是医生',
+  'cat.manage': '分类', 'cat.none': '未分类', 'cat.label': '分类',
 }

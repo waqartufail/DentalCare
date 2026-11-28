@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Мятный бриз', 'th.ocean': 'Океанская волна', 'th.lavender': 'Лавандовая мечта', 'th.rose': 'Лепесток розы', 'th.meadow': 'Свежий луг', 'th.sunset': 'Закатное сияние', 'th.berry': 'Ягодный румянец', 'th.sky': 'Небесная конфета', 'th.emerald': 'Изумрудное море', 'th.golden': 'Золотой час', 'th.twilight': 'Сумерки', 'th.oceannight': 'Океанская ночь',
   'logo.title': 'Логотип клиники', 'logo.upload': 'Загрузить логотип', 'logo.remove': 'Удалить логотип',
   'staff.also_doctor': 'Я также врач',
+  'cat.manage': 'Категории', 'cat.none': 'Без категории', 'cat.label': 'Категория',
 }

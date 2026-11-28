@@ -33,4 +33,5 @@ export default {
   'th.mint': 'نسيم النعناع', 'th.ocean': 'موجة المحيط', 'th.lavender': 'حلم اللافندر', 'th.rose': 'بتلة الورد', 'th.meadow': 'المرج الأخضر', 'th.sunset': 'وهج الغروب', 'th.berry': 'خجل التوت', 'th.sky': 'حلوى السماء', 'th.emerald': 'البحر الزمردي', 'th.golden': 'الساعة الذهبية', 'th.twilight': 'الغسق', 'th.oceannight': 'ليل المحيط',
   'logo.title': 'شعار العيادة', 'logo.upload': 'رفع الشعار', 'logo.remove': 'إزالة الشعار',
   'staff.also_doctor': 'أنا أيضًا طبيب',
+  'cat.manage': 'الفئات', 'cat.none': 'بدون فئة', 'cat.label': 'الفئة',
 }

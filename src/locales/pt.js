@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Brisa de menta', 'th.ocean': 'Onda do oceano', 'th.lavender': 'Sonho de lavanda', 'th.rose': 'Pétala de rosa', 'th.meadow': 'Campo fresco', 'th.sunset': 'Brilho do pôr do sol', 'th.berry': 'Rubor de frutas', 'th.sky': 'Doce celeste', 'th.emerald': 'Mar esmeralda', 'th.golden': 'Hora dourada', 'th.twilight': 'Crepúsculo', 'th.oceannight': 'Noite oceânica',
   'logo.title': 'Logotipo da clínica', 'logo.upload': 'Enviar logotipo', 'logo.remove': 'Remover logotipo',
   'staff.also_doctor': 'Também sou dentista',
+  'cat.manage': 'Categorias', 'cat.none': 'Sem categoria', 'cat.label': 'Categoria',
 }

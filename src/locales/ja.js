@@ -33,4 +33,5 @@ export default {
   'th.mint': 'ミントブリーズ', 'th.ocean': 'オーシャンウェーブ', 'th.lavender': 'ラベンダードリーム', 'th.rose': 'ローズペタル', 'th.meadow': 'フレッシュメドウ', 'th.sunset': 'サンセットグロウ', 'th.berry': 'ベリーブラッシュ', 'th.sky': 'スカイキャンディ', 'th.emerald': 'エメラルドシー', 'th.golden': 'ゴールデンアワー', 'th.twilight': 'トワイライト', 'th.oceannight': 'オーシャンナイト',
   'logo.title': 'クリニックのロゴ', 'logo.upload': 'ロゴをアップロード', 'logo.remove': 'ロゴを削除',
   'staff.also_doctor': '私も医師です',
+  'cat.manage': 'カテゴリ', 'cat.none': '未分類', 'cat.label': 'カテゴリ',
 }

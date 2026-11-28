@@ -12,6 +12,48 @@ import Lab from './pages/Lab.jsx'
 import Helper from './pages/Helper.jsx'
 import { Waiting, Rejected, Disabled, Locked } from './pages/Gate.jsx'
 
+
+// "Dental Care Clinic" -> "Dental Care" (Clinic lafz se pehle ka naam). Na mile to poora naam.
+export function shortClinicName(name) {
+  const n = String(name || '').trim()
+  const cut = n.replace(/[\s\-–—,|:]*\bclinics?\b.*$/i, '').trim()
+  return cut || n
+}
+
+const DEFAULT_TITLE = 'DentCare'
+const DEFAULT_ICON = import.meta.env.BASE_URL + 'icon.svg'
+
+// Browser tab ka naam, logo (favicon), aur "Add to Home Screen" ka naam/icon clinic ke hisab se
+function applyBranding(clinic) {
+  const title = clinic ? shortClinicName(clinic.name) : DEFAULT_TITLE
+  const icon = clinic?.logo_url || DEFAULT_ICON
+  document.title = title
+  const setLink = (rel) => {
+    let l = document.querySelector(`link[rel="${rel}"]`)
+    if (!l) { l = document.createElement('link'); l.rel = rel; document.head.appendChild(l) }
+    l.href = icon
+    if (rel === 'icon') l.removeAttribute('type')
+  }
+  setLink('icon'); setLink('apple-touch-icon')
+  const meta = document.querySelector('meta[name="apple-mobile-web-app-title"]')
+  if (meta) meta.setAttribute('content', title)
+  try {
+    const m = document.querySelector('link[rel="manifest"]')
+    if (m) {
+      if (!m.dataset.orig) m.dataset.orig = m.href
+      if (m.dataset.blob) URL.revokeObjectURL(m.dataset.blob)
+      if (clinic) {
+        const base = new URL(import.meta.env.BASE_URL, window.location.origin).href
+        const man = { name: clinic.name, short_name: title, start_url: base, scope: base, display: 'standalone', background_color: '#f4f7f7', theme_color: '#0f766e',
+          icons: [{ src: icon, sizes: '512x512', type: 'image/png', purpose: 'any' }] }
+        const url = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' }))
+        m.dataset.blob = url
+        m.href = url
+      } else { m.href = m.dataset.orig; delete m.dataset.blob }
+    }
+  } catch { /* ignore */ }
+}
+
 function TestBar({ profile, onSwitched }) {
   const [clinics, setClinics] = useState([])
   const [err, setErr] = useState('')
@@ -72,6 +114,7 @@ function Main() {
   }, [session])
 
   useEffect(() => { refresh() }, [refresh])
+  useEffect(() => { applyBranding(session && ctx?.profile?.role !== 'executive' ? ctx?.clinic : null) }, [session, ctx?.clinic?.name, ctx?.clinic?.logo_url, ctx?.profile?.role])
 
   const logout = () => supabase.auth.signOut()
   const reload = () => refresh()

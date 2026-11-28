@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabase'
 import Shell from '../components/Shell'
 import Attendance from '../components/Attendance'
+import TreatmentPicker from '../components/TreatmentPicker'
 import { useToast, isoDate, addDays, dayStart, fmtTime, fmtDT, STATUS, KIND, ACTIVE, apptTotal } from '../lib'
 import { fmtDate, money } from '../util'
 import { t as T } from '../i18n'
@@ -25,6 +26,7 @@ export function DoctorPanel({ clinic, notify, view, onWaiting }) {
   const [date, setDate] = useState(isoDate())
   const [appts, setAppts] = useState([])
   const [treatments, setTreatments] = useState([])
+  const [categories, setCategories] = useState([])
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(null) // appointment id
@@ -38,14 +40,15 @@ export function DoctorPanel({ clinic, notify, view, onWaiting }) {
       setMyId(id)
     }
     if (!id) { setLoading(false); return }
-    const [a, tr, p] = await Promise.all([
+    const [a, tr, p, cg] = await Promise.all([
       supabase.from('appointments').select('*, patients(full_name, phone, patient_no, age, gender), appointment_treatments(*)')
         .eq('doctor_id', id).gte('start_at', dayStart(date).toISOString()).lt('start_at', dayStart(addDays(date, 1)).toISOString()).order('start_at'),
       supabase.from('treatments').select('*').eq('is_active', true).order('name'),
       supabase.from('patients').select('*').order('created_at', { ascending: false }).limit(2000),
+      supabase.from('treatment_categories').select('*').order('sort_order').order('name'),
     ])
     if (a.error) notify(a.error.message, true)
-    setAppts(a.data || []); setTreatments(tr.data || []); setPatients(p.data || [])
+    setAppts(a.data || []); setTreatments(tr.data || []); setPatients(p.data || []); setCategories(cg.data || [])
     setLoading(false)
   }, [myId, date])
 
@@ -96,7 +99,7 @@ export function DoctorPanel({ clinic, notify, view, onWaiting }) {
           })}
         </>
       )}
-      {openAppt && <Consult appt={openAppt} treatments={treatments} clinic={clinic} notify={notify} close={() => setOpen(null)} reload={load} />}
+      {openAppt && <Consult appt={openAppt} treatments={treatments} categories={categories} clinic={clinic} notify={notify} close={() => setOpen(null)} reload={load} />}
       {histPatient && <HistoryModal patient={histPatient} close={() => setHistPatient(null)} />}
     </>
   )
@@ -160,7 +163,7 @@ function HistoryModal({ patient, close }) {
 }
 
 /* ---------- consultation ---------- */
-function Consult({ appt: a, treatments, clinic, notify, close, reload }) {
+function Consult({ appt: a, treatments, categories, clinic, notify, close, reload }) {
   const hist = useHistory(a.patient_id, a.id)
   const [f, setF] = useState({
     diagnosis: a.diagnosis || '', prescription: a.prescription || '', notes: a.doctor_notes || '',
@@ -232,13 +235,7 @@ function Consult({ appt: a, treatments, clinic, notify, close, reload }) {
                 <span><b>{money(t.fee)}</b> <button className="btn small danger" onClick={() => run(() => supabase.from('appointment_treatments').delete().eq('id', t.id))}>✕</button></span>
               </div>
             ))}
-            <div className="picklist">
-              {treatments.map((t) => (
-                <label key={t.id} className="check pick"><input type="checkbox" checked={pick.includes(t.id)} onChange={() => toggle(t.id)} />
-                  <span>{t.name}{t.needs_lab && <span className="pill blue" style={{ marginLeft: 6 }}>Lab</span>}</span><span className="muted">{money(t.fee)}</span>
-                </label>
-              ))}
-            </div>
+            <TreatmentPicker treatments={treatments} categories={categories} pick={pick} toggle={toggle} />
             <button className="btn" disabled={pick.length === 0 || busy} onClick={addLines}>+ Selected treatments add karein ({pick.length})</button>
 
             <h4>Consultation</h4>

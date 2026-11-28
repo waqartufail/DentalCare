@@ -33,4 +33,5 @@ export default {
   'th.mint': 'Brisa de menta', 'th.ocean': 'Ola oceánica', 'th.lavender': 'Sueño de lavanda', 'th.rose': 'Pétalo de rosa', 'th.meadow': 'Prado fresco', 'th.sunset': 'Resplandor del ocaso', 'th.berry': 'Rubor de bayas', 'th.sky': 'Caramelo celeste', 'th.emerald': 'Mar esmeralda', 'th.golden': 'Hora dorada', 'th.twilight': 'Crepúsculo', 'th.oceannight': 'Noche oceánica',
   'logo.title': 'Logo de la clínica', 'logo.upload': 'Subir logo', 'logo.remove': 'Quitar logo',
   'staff.also_doctor': 'También soy doctor',
+  'cat.manage': 'Categorías', 'cat.none': 'Sin categoría', 'cat.label': 'Categoría',
 }
